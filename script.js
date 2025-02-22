@@ -143,30 +143,6 @@ function updateColor() {
     brightnessValue.textContent = `${Math.round(currentBrightness)}%`;
 }
 
-// 修改更新色轮选择器位置的函数
-function updatePickerPosition(r, g, b) {
-    const { h, s, v } = rgbToHsv(r, g, b);
-    const wheelRect = colorWheel.getBoundingClientRect();
-    const radius = wheelRect.width / 2;
-    const centerX = radius;
-    const centerY = radius;
-    
-    // 计算角度（0度在右侧，顺时针增加）
-    const angleRad = (h * Math.PI) / 180;
-    
-    // 计算新位置，考虑明度的影响
-    const distance = s * radius; // 饱和度决定离中心的距离
-    const x = centerX + distance * Math.cos(angleRad);
-    const y = centerY + distance * Math.sin(angleRad);
-    
-    colorPickerHandle.style.left = `${x}px`;
-    colorPickerHandle.style.top = `${y}px`;
-    
-    // 同时更新亮度滑块
-    currentBrightness = v * 100;
-    brightnessSlider.value = currentBrightness;
-}
-
 // 修改预设颜色点击处理
 document.querySelectorAll('.color-preset').forEach(preset => {
     preset.addEventListener('click', () => {
@@ -176,11 +152,14 @@ document.querySelectorAll('.color-preset').forEach(preset => {
         const [r, g, b] = preset.dataset.color.split(',');
         currentRGB = { r: parseInt(r), g: parseInt(g), b: parseInt(b) };
         
-        // 重置亮度到100%
-        currentBrightness = 100;
-        brightnessSlider.value = 100;
+        // 获取颜色的 HSV 值
+        const { h, s, v } = rgbToHsv(currentRGB.r, currentRGB.g, currentRGB.b);
         
-        // 更新色轮选择器位置
+        // 更新亮度值和滑块位置
+        currentBrightness = v * 100;
+        brightnessSlider.value = currentBrightness;
+        
+        // 更新色轮选择器位置（这里不需要再次更新亮度，因为 updatePickerPosition 已经包含了亮度更新）
         updatePickerPosition(currentRGB.r, currentRGB.g, currentRGB.b);
         
         updateColor();
@@ -504,7 +483,7 @@ initColorPicker();
 
 // 修改色轮双击事件处理，缩短判定时间
 let lastClickTime = 0;
-const DOUBLE_CLICK_DELAY = 200; // 缩短到200毫秒
+const DOUBLE_CLICK_DELAY = 50; // 缩短到50毫秒
 
 colorWheel.addEventListener('click', (e) => {
     const currentTime = new Date().getTime();
@@ -533,4 +512,24 @@ colorWheel.addEventListener('click', (e) => {
 });
 
 // 移除原来的双击事件监听器
-colorWheel.removeEventListener('dblclick', null); 
+colorWheel.removeEventListener('dblclick', null);
+
+// 修改更新色轮选择器位置的函数，移除重复的亮度更新
+function updatePickerPosition(r, g, b) {
+    const { h, s, v } = rgbToHsv(r, g, b);
+    const wheelRect = colorWheel.getBoundingClientRect();
+    const radius = wheelRect.width / 2;
+    const centerX = radius;
+    const centerY = radius;
+    
+    // 计算角度（0度在右侧，顺时针增加）
+    const angleRad = (h * Math.PI) / 180;
+    
+    // 计算新位置，考虑明度的影响
+    const distance = s * radius; // 饱和度决定离中心的距离
+    const x = centerX + distance * Math.cos(angleRad);
+    const y = centerY + distance * Math.sin(angleRad);
+    
+    colorPickerHandle.style.left = `${x}px`;
+    colorPickerHandle.style.top = `${y}px`;
+} 
