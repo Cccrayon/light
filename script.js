@@ -145,7 +145,7 @@ function updateColor() {
 
 // 修改更新色轮选择器位置的函数
 function updatePickerPosition(r, g, b) {
-    const { h, s } = rgbToHsv(r, g, b);
+    const { h, s, v } = rgbToHsv(r, g, b);
     const wheelRect = colorWheel.getBoundingClientRect();
     const radius = wheelRect.width / 2;
     const centerX = radius;
@@ -154,13 +154,17 @@ function updatePickerPosition(r, g, b) {
     // 计算角度（0度在右侧，顺时针增加）
     const angleRad = (h * Math.PI) / 180;
     
-    // 计算新位置
-    const distance = s * radius;
+    // 计算新位置，考虑明度的影响
+    const distance = s * radius; // 饱和度决定离中心的距离
     const x = centerX + distance * Math.cos(angleRad);
     const y = centerY + distance * Math.sin(angleRad);
     
     colorPickerHandle.style.left = `${x}px`;
     colorPickerHandle.style.top = `${y}px`;
+    
+    // 同时更新亮度滑块
+    currentBrightness = v * 100;
+    brightnessSlider.value = currentBrightness;
 }
 
 // 修改预设颜色点击处理
@@ -498,21 +502,35 @@ function initColorPicker() {
 
 initColorPicker();
 
-// 修改色轮双击事件处理
-colorWheel.addEventListener('dblclick', (e) => {
-    e.preventDefault();
+// 修改色轮双击事件处理，缩短判定时间
+let lastClickTime = 0;
+const DOUBLE_CLICK_DELAY = 200; // 缩短到200毫秒
+
+colorWheel.addEventListener('click', (e) => {
+    const currentTime = new Date().getTime();
+    const timeDiff = currentTime - lastClickTime;
     
-    const wheelRect = colorWheel.getBoundingClientRect();
-    const centerX = wheelRect.width / 2;
-    const centerY = wheelRect.height / 2;
+    if (timeDiff < DOUBLE_CLICK_DELAY) {
+        // 双击处理
+        e.preventDefault();
+        
+        const wheelRect = colorWheel.getBoundingClientRect();
+        const centerX = wheelRect.width / 2;
+        const centerY = wheelRect.height / 2;
+        
+        colorPickerHandle.style.left = `${centerX}px`;
+        colorPickerHandle.style.top = `${centerY}px`;
+        
+        currentRGB = { r: 255, g: 255, b: 255 };
+        currentBrightness = 100;
+        brightnessSlider.value = 100;
+        updateColor();
+        
+        document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
+    }
     
-    colorPickerHandle.style.left = `${centerX}px`;
-    colorPickerHandle.style.top = `${centerY}px`;
-    
-    currentRGB = { r: 255, g: 255, b: 255 };
-    currentBrightness = 100;
-    brightnessSlider.value = 100;
-    updateColor();
-    
-    document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
-}); 
+    lastClickTime = currentTime;
+});
+
+// 移除原来的双击事件监听器
+colorWheel.removeEventListener('dblclick', null); 
