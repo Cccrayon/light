@@ -153,7 +153,7 @@ function updateColor() {
     brightnessValue.textContent = `${Math.round(currentBrightness)}%`;
 }
 
-// 添加更新色轮选择器位置的函数
+// 修改更新色轮选择器位置的函数
 function updatePickerPosition(r, g, b) {
     const { h, s } = rgbToHsv(r, g, b);
     const wheelRect = colorWheel.getBoundingClientRect();
@@ -161,13 +161,13 @@ function updatePickerPosition(r, g, b) {
     const centerX = radius;
     const centerY = radius;
     
-    // 将角度转换为弧度，并调整偏移
+    // 修正角度计算，使其与色轮渲染对应
     const angleRad = ((h - 90) % 360) * Math.PI / 180;
     
-    // 计算新位置
+    // 计算新位置（注意三角函数要用负值来匹配坐标系）
     const distance = s * radius;
-    const x = centerX + distance * Math.cos(angleRad);
-    const y = centerY + distance * Math.sin(angleRad);
+    const x = centerX + distance * Math.cos(-angleRad);
+    const y = centerY + distance * Math.sin(-angleRad);
     
     // 更新选择器位置
     colorPickerHandle.style.left = `${x}px`;
@@ -507,4 +507,22 @@ function initColorPicker() {
     colorPickerHandle.style.top = `${centerY}px`;
 }
 
-initColorPicker(); 
+initColorPicker();
+
+// 添加色轮双击事件处理
+colorWheel.addEventListener('dblclick', () => {
+    // 重置选择器位置到中心
+    const wheelRect = colorWheel.getBoundingClientRect();
+    const centerX = wheelRect.width / 2;
+    const centerY = wheelRect.height / 2;
+    
+    colorPickerHandle.style.left = `${centerX}px`;
+    colorPickerHandle.style.top = `${centerY}px`;
+    
+    // 设置为白色
+    currentRGB = { r: 255, g: 255, b: 255 };
+    updateColor();
+    
+    // 移除所有预设颜色的激活状态
+    document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
+}); 
