@@ -148,6 +148,63 @@ document.querySelectorAll('.color-preset').forEach(preset => {
     });
 });
 
+// 修改色轮的事件监听
+let lastClickTime = 0;
+const DOUBLE_CLICK_DELAY = 100;
+
+// 移除重复的事件监听器
+colorWheel.removeEventListener('mousedown', null);
+document.removeEventListener('mousemove', null);
+document.removeEventListener('mouseup', null);
+
+// 重新添加事件监听器
+colorWheel.addEventListener('mousedown', (e) => {
+    const currentTime = new Date().getTime();
+    const timeDiff = currentTime - lastClickTime;
+    
+    if (timeDiff < DOUBLE_CLICK_DELAY) {
+        // 双击处理
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const wheelRect = colorWheel.getBoundingClientRect();
+        const centerX = wheelRect.width / 2;
+        const centerY = wheelRect.height / 2;
+        
+        colorPickerHandle.style.left = `${centerX}px`;
+        colorPickerHandle.style.top = `${centerY}px`;
+        
+        currentRGB = { r: 255, g: 255, b: 255 };
+        currentBrightness = 100;
+        brightnessSlider.value = 100;
+        updateColor();
+        
+        document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
+        
+        isPickingColor = false;
+    } else {
+        // 单击处理
+        isPickingColor = true;
+        handleColorWheelInteraction(e);
+    }
+    
+    lastClickTime = currentTime;
+});
+
+// 修改移动和抬起事件
+document.addEventListener('mousemove', (e) => {
+    if (isPickingColor) {
+        e.preventDefault();
+        handleColorWheelInteraction(e);
+    }
+});
+
+document.addEventListener('mouseup', () => {
+    if (isPickingColor) {
+        isPickingColor = false;
+    }
+});
+
 // 修改色轮交互函数
 function handleColorWheelInteraction(e) {
     const rect = colorWheel.getBoundingClientRect();
@@ -167,7 +224,6 @@ function handleColorWheelInteraction(e) {
         colorPickerHandle.style.left = `${clientX - rect.left}px`;
         colorPickerHandle.style.top = `${clientY - rect.top}px`;
         
-        // 计算角度（0度在右侧，顺时针增加）
         let angle = Math.atan2(y, x) * 180 / Math.PI;
         if (angle < 0) angle += 360;
         
@@ -177,59 +233,6 @@ function handleColorWheelInteraction(e) {
         updateColor();
     }
 }
-
-// 修改色轮的事件监听
-colorWheel.addEventListener('mousedown', (e) => {
-    const currentTime = new Date().getTime();
-    const timeDiff = currentTime - lastClickTime;
-    
-    if (timeDiff < DOUBLE_CLICK_DELAY) {
-        // 双击处理
-        e.preventDefault();
-        e.stopPropagation();
-        
-        // 重置选择器位置到中心
-        const wheelRect = colorWheel.getBoundingClientRect();
-        const centerX = wheelRect.width / 2;
-        const centerY = wheelRect.height / 2;
-        
-        requestAnimationFrame(() => {
-            colorPickerHandle.style.left = `${centerX}px`;
-            colorPickerHandle.style.top = `${centerY}px`;
-            
-            // 设置为白色
-            currentRGB = { r: 255, g: 255, b: 255 };
-            currentBrightness = 100;
-            brightnessSlider.value = 100;
-            updateColor();
-            
-            // 移除所有预设颜色的激活状态
-            document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
-        });
-        
-        // 防止触发正常的颜色选择
-        isPickingColor = false;
-        return;
-    }
-    
-    // 正常的颜色选择处理
-    isPickingColor = true;
-    handleColorWheelInteraction(e);
-    
-    lastClickTime = currentTime;
-});
-
-// 添加回 mousemove 和 mouseup 事件监听
-document.addEventListener('mousemove', (e) => {
-    if (isPickingColor) {
-        e.preventDefault();
-        handleColorWheelInteraction(e);
-    }
-});
-
-document.addEventListener('mouseup', () => {
-    isPickingColor = false;
-});
 
 // 修改色轮的触摸事件处理
 colorWheel.addEventListener('touchstart', (e) => {
