@@ -443,64 +443,30 @@ brightnessSlider.addEventListener('change', function() {
     updateColor();
 });
 
-// 色轮控制点双击处理
-let lastPickerClickTime = 0;
-
+// 修改色轮控制点的事件处理
 colorPickerHandle.addEventListener('mousedown', function(e) {
     e.preventDefault();
     e.stopPropagation();
-    
-    const currentTime = new Date().getTime();
-    const timeDiff = currentTime - lastPickerClickTime;
-    
-    if (timeDiff < DOUBLE_CLICK_DELAY) {
-        // 双击处理
-        const wheelRect = colorWheel.getBoundingClientRect();
-        const centerX = wheelRect.width / 2;
-        const centerY = wheelRect.height / 2;
-        
-        colorPickerHandle.style.left = `${centerX}px`;
-        colorPickerHandle.style.top = `${centerY}px`;
-        
-        currentRGB = { r: 255, g: 255, b: 255 };
-        currentBrightness = 100;
-        brightnessSlider.value = 100;
-        brightnessValue.textContent = '100%';
-        updateColor();
-        
-        document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
-    } else {
-        // 单击处理：开始拖动
-        isHandleDragging = true;
-    }
-    
-    lastPickerClickTime = currentTime;
+    isHandleDragging = true;
 });
 
-// 添加触摸设备支持
-brightnessSlider.addEventListener('touchstart', function(e) {
-    const currentTime = new Date().getTime();
-    const timeDiff = currentTime - lastPickerClickTime;
-    
-    if (timeDiff < DOUBLE_CLICK_DELAY) {
-        // 双击处理
-        e.preventDefault();
-        currentBrightness = 100;
-        this.value = 100;
-        brightnessValue.textContent = '100%';
-        updateColor();
-    }
-    
-    lastPickerClickTime = currentTime;
-}, { passive: false });
-
-// 修改控制点的拖动事件
 document.addEventListener('mousemove', function(e) {
     if (isHandleDragging) {
         e.preventDefault();
         handleColorWheelInteraction(e);
     }
 });
+
+document.addEventListener('mouseup', function() {
+    isHandleDragging = false;
+});
+
+// 触摸支持
+colorPickerHandle.addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    isHandleDragging = true;
+}, { passive: false });
 
 document.addEventListener('touchmove', function(e) {
     if (isHandleDragging) {
@@ -509,41 +475,6 @@ document.addEventListener('touchmove', function(e) {
     }
 }, { passive: false });
 
-document.addEventListener('mouseup', function() {
+document.addEventListener('touchend', function() {
     isHandleDragging = false;
-});
-
-// 添加触摸支持
-colorPickerHandle.addEventListener('touchstart', function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    const currentTime = new Date().getTime();
-    const timeDiff = currentTime - lastPickerClickTime;
-    
-    if (timeDiff < DOUBLE_CLICK_DELAY) {
-        // 双击处理
-        const wheelRect = colorWheel.getBoundingClientRect();
-        const centerX = wheelRect.width / 2;
-        const centerY = wheelRect.height / 2;
-        
-        colorPickerHandle.style.left = `${centerX}px`;
-        colorPickerHandle.style.top = `${centerY}px`;
-        
-        currentRGB = { r: 255, g: 255, b: 255 };
-        currentBrightness = 100;
-        brightnessSlider.value = 100;
-        brightnessValue.textContent = '100%';
-        updateColor();
-        
-        document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
-    } else {
-        // 开始拖动
-        isHandleDragging = true;
-        const rect = colorWheel.getBoundingClientRect();
-        handleInitialX = e.touches[0].clientX - rect.left;
-        handleInitialY = e.touches[0].clientY - rect.top;
-    }
-    
-    lastPickerClickTime = currentTime;
-}, { passive: false }); 
+}); 
