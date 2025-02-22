@@ -180,20 +180,43 @@ function handleColorWheelInteraction(e) {
 
 // 修改色轮的事件监听
 colorWheel.addEventListener('mousedown', (e) => {
-    e.preventDefault();
+    const currentTime = new Date().getTime();
+    const timeDiff = currentTime - lastClickTime;
+    
+    if (timeDiff < DOUBLE_CLICK_DELAY) {
+        // 双击处理
+        e.preventDefault();
+        e.stopPropagation(); // 阻止事件冒泡
+        
+        // 重置选择器位置到中心
+        const wheelRect = colorWheel.getBoundingClientRect();
+        const centerX = wheelRect.width / 2;
+        const centerY = wheelRect.height / 2;
+        
+        requestAnimationFrame(() => {
+            colorPickerHandle.style.left = `${centerX}px`;
+            colorPickerHandle.style.top = `${centerY}px`;
+            
+            // 设置为白色
+            currentRGB = { r: 255, g: 255, b: 255 };
+            currentBrightness = 100;
+            brightnessSlider.value = 100;
+            updateColor();
+            
+            // 移除所有预设颜色的激活状态
+            document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
+        });
+        
+        // 防止触发正常的颜色选择
+        isPickingColor = false;
+        return;
+    }
+    
+    // 正常的颜色选择处理
     isPickingColor = true;
     handleColorWheelInteraction(e);
-});
-
-document.addEventListener('mousemove', (e) => {
-    if (isPickingColor) {
-        e.preventDefault();
-        handleColorWheelInteraction(e);
-    }
-});
-
-document.addEventListener('mouseup', () => {
-    isPickingColor = false;
+    
+    lastClickTime = currentTime;
 });
 
 // 修改色轮的触摸事件处理
@@ -348,15 +371,12 @@ function takePhoto() {
     // 先重置任何可能的变换
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     
-    // 检查视频是否已经被镜像
-    const videoStyle = window.getComputedStyle(videoPreview);
-    const isVideoMirrored = videoStyle.transform.includes('scale(-1');
-    
-    // 如果视频已经被镜像，则在拍照时需要反向处理
-    if (isVideoMirrored) {
+    // 在非移动设备上，总是进行镜像处理
+    if (!isMobile) {
         ctx.translate(canvas.width, 0);
         ctx.scale(-1, 1);
     }
+    // 在移动设备上保持原样
     
     ctx.drawImage(videoPreview, 0, 0);
     
@@ -467,32 +487,46 @@ function initColorPicker() {
 
 initColorPicker();
 
-// 修改色轮双击事件处理，缩短判定时间
+// 修改色轮双击事件处理
 let lastClickTime = 0;
-const DOUBLE_CLICK_DELAY = 100; // 缩短到100毫秒
+const DOUBLE_CLICK_DELAY = 100;
 
-colorWheel.addEventListener('click', (e) => {
+colorWheel.addEventListener('mousedown', (e) => {
     const currentTime = new Date().getTime();
     const timeDiff = currentTime - lastClickTime;
     
     if (timeDiff < DOUBLE_CLICK_DELAY) {
         // 双击处理
         e.preventDefault();
+        e.stopPropagation(); // 阻止事件冒泡
         
+        // 重置选择器位置到中心
         const wheelRect = colorWheel.getBoundingClientRect();
         const centerX = wheelRect.width / 2;
         const centerY = wheelRect.height / 2;
         
-        colorPickerHandle.style.left = `${centerX}px`;
-        colorPickerHandle.style.top = `${centerY}px`;
+        requestAnimationFrame(() => {
+            colorPickerHandle.style.left = `${centerX}px`;
+            colorPickerHandle.style.top = `${centerY}px`;
+            
+            // 设置为白色
+            currentRGB = { r: 255, g: 255, b: 255 };
+            currentBrightness = 100;
+            brightnessSlider.value = 100;
+            updateColor();
+            
+            // 移除所有预设颜色的激活状态
+            document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
+        });
         
-        currentRGB = { r: 255, g: 255, b: 255 };
-        currentBrightness = 100;
-        brightnessSlider.value = 100;
-        updateColor();
-        
-        document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
+        // 防止触发正常的颜色选择
+        isPickingColor = false;
+        return;
     }
+    
+    // 正常的颜色选择处理
+    isPickingColor = true;
+    handleColorWheelInteraction(e);
     
     lastClickTime = currentTime;
 });
