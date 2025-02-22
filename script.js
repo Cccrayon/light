@@ -262,7 +262,13 @@ function updatePickerPosition(r, g, b) {
 // 修改更新颜色显示函数
 function updateColor() {
     const bright = currentBrightness / 100;
+    const { r, g, b } = currentRGB;
     
+    // 更新背景色
+    colorDisplay.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+    colorPreview.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+    
+    // 更新亮度
     if (bright <= 1) {
         colorDisplay.style.filter = `brightness(${bright})`;
     } else {
@@ -271,9 +277,7 @@ function updateColor() {
         colorDisplay.style.filter = `contrast(${contrastValue}) brightness(${brightnessValue})`;
     }
     
-    const { r, g, b } = currentRGB;
-    colorDisplay.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
-    colorPreview.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+    // 更新亮度显示
     brightnessValue.textContent = `${Math.round(currentBrightness)}%`;
 }
 
@@ -430,14 +434,13 @@ openCameraBtn.addEventListener('click', initCamera);
 closeCamera.addEventListener('click', stopCamera);
 takePhotoBtn.addEventListener('click', takePhoto);
 
-// 亮度滑块事件处理
-brightnessSlider.addEventListener('input', function() {
-    currentBrightness = parseInt(this.value);
-    brightnessValue.textContent = `${currentBrightness}%`;
-    updateColor();
-});
+// 删除现有的亮度滑块事件监听器
+brightnessSlider.removeEventListener('input', null);
+brightnessSlider.removeEventListener('change', null);
 
-brightnessSlider.addEventListener('change', function() {
+// 亮度滑块事件处理
+brightnessSlider.addEventListener('input', function(e) {
+    e.preventDefault();
     currentBrightness = parseInt(this.value);
     brightnessValue.textContent = `${currentBrightness}%`;
     updateColor();
