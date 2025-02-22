@@ -230,13 +230,6 @@ async function initCamera() {
         stream = await navigator.mediaDevices.getUserMedia(constraints);
         videoPreview.srcObject = stream;
         
-        // 根据设备类型设置视频方向
-        if (isMobile) {
-            videoPreview.style.transform = 'scaleX(-1)'; // 前置摄像头需要镜像
-        } else {
-            videoPreview.style.transform = 'scaleX(1)'; // 后置摄像头不需要镜像
-        }
-        
         cameraContainer.style.display = 'block';
         
         if (!isMobile) {
