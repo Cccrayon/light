@@ -125,7 +125,7 @@ function createColorWheel(canvas) {
     ctx.fill();
 }
 
-// 删除现有的色轮相关事件监听器
+// 删除所有重复的事件监听器
 colorWheel.removeEventListener('mousedown', null);
 document.removeEventListener('mousemove', null);
 document.removeEventListener('mouseup', null);
@@ -140,8 +140,8 @@ function handleColorWheelInteraction(e) {
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
     
-    const clientX = e.clientX || e.touches[0].clientX;
-    const clientY = e.clientY || e.touches[0].clientY;
+    const clientX = e.clientX || (e.touches ? e.touches[0].clientX : 0);
+    const clientY = e.clientY || (e.touches ? e.touches[0].clientY : 0);
     
     const x = clientX - rect.left - centerX;
     const y = clientY - rect.top - centerY;
@@ -188,13 +188,13 @@ function resetToCenter() {
 
 // 色轮鼠标事件
 colorWheel.addEventListener('mousedown', (e) => {
+    e.preventDefault();
     const currentTime = new Date().getTime();
     const timeDiff = currentTime - lastClickTime;
     
     if (timeDiff < DOUBLE_CLICK_DELAY) {
         // 双击处理
         resetToCenter();
-        isPickingColor = false;
     } else {
         // 单击和拖动处理
         isPickingColor = true;
@@ -258,17 +258,28 @@ document.querySelectorAll('.color-preset').forEach(preset => {
 
 // 修改色轮选择器初始位置设置
 function initColorPicker() {
-    requestAnimationFrame(() => {
-        const wheelRect = colorWheel.getBoundingClientRect();
-        const centerX = wheelRect.width / 2;
-        const centerY = wheelRect.height / 2;
-        
-        colorPickerHandle.style.left = `${centerX}px`;
-        colorPickerHandle.style.top = `${centerY}px`;
-    });
+    const wheelRect = colorWheel.getBoundingClientRect();
+    const centerX = wheelRect.width / 2;
+    const centerY = wheelRect.height / 2;
+    
+    colorPickerHandle.style.left = `${centerX}px`;
+    colorPickerHandle.style.top = `${centerY}px`;
 }
 
+// 初始化
+createColorWheel(canvas);
+updateColor();
 initColorPicker();
+
+// 修改色轮选择器初始位置设置
+function initColorPicker() {
+    const wheelRect = colorWheel.getBoundingClientRect();
+    const centerX = wheelRect.width / 2;
+    const centerY = wheelRect.height / 2;
+    
+    colorPickerHandle.style.left = `${centerX}px`;
+    colorPickerHandle.style.top = `${centerY}px`;
+}
 
 // 修改色轮双击事件处理
 colorWheel.addEventListener('mousedown', (e) => {
@@ -502,20 +513,14 @@ openCameraBtn.addEventListener('click', initCamera);
 closeCamera.addEventListener('click', stopCamera);
 takePhotoBtn.addEventListener('click', takePhoto);
 
-// 初始化
-createColorWheel(canvas);
-updateColor();
-
 // 修改色轮选择器初始位置设置
 function initColorPicker() {
-    requestAnimationFrame(() => {
-        const wheelRect = colorWheel.getBoundingClientRect();
-        const centerX = wheelRect.width / 2;
-        const centerY = wheelRect.height / 2;
-        
-        colorPickerHandle.style.left = `${centerX}px`;
-        colorPickerHandle.style.top = `${centerY}px`;
-    });
+    const wheelRect = colorWheel.getBoundingClientRect();
+    const centerX = wheelRect.width / 2;
+    const centerY = wheelRect.height / 2;
+    
+    colorPickerHandle.style.left = `${centerX}px`;
+    colorPickerHandle.style.top = `${centerY}px`;
 }
 
 initColorPicker();
