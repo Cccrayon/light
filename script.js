@@ -230,6 +230,9 @@ async function initCamera() {
         stream = await navigator.mediaDevices.getUserMedia(constraints);
         videoPreview.srcObject = stream;
         
+        // 移除视频镜像效果
+        videoPreview.style.transform = 'scaleX(1)';
+        
         cameraContainer.style.display = 'block';
         
         if (!isMobile) {
@@ -265,10 +268,7 @@ function takePhoto() {
     canvas.height = videoPreview.videoHeight;
     
     const ctx = canvas.getContext('2d');
-    if (isIOS) {
-        ctx.scale(-1, 1);
-        ctx.translate(-canvas.width, 0);
-    }
+    // 移除镜像翻转
     ctx.drawImage(videoPreview, 0, 0);
     
     if (isIOS) {
