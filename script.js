@@ -186,7 +186,7 @@ colorWheel.addEventListener('mousedown', (e) => {
     if (timeDiff < DOUBLE_CLICK_DELAY) {
         // 双击处理
         e.preventDefault();
-        e.stopPropagation(); // 阻止事件冒泡
+        e.stopPropagation();
         
         // 重置选择器位置到中心
         const wheelRect = colorWheel.getBoundingClientRect();
@@ -217,6 +217,18 @@ colorWheel.addEventListener('mousedown', (e) => {
     handleColorWheelInteraction(e);
     
     lastClickTime = currentTime;
+});
+
+// 添加回 mousemove 和 mouseup 事件监听
+document.addEventListener('mousemove', (e) => {
+    if (isPickingColor) {
+        e.preventDefault();
+        handleColorWheelInteraction(e);
+    }
+});
+
+document.addEventListener('mouseup', () => {
+    isPickingColor = false;
 });
 
 // 修改色轮的触摸事件处理
