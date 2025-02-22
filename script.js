@@ -148,11 +148,16 @@ document.querySelectorAll('.color-preset').forEach(preset => {
     });
 });
 
-// 保留一个统一的事件处理逻辑
+// 删除所有现有的色轮相关事件监听器
+colorWheel.removeEventListener('mousedown', null);
+document.removeEventListener('mousemove', null);
+document.removeEventListener('mouseup', null);
+
+// 重新设置色轮的事件处理
 let lastClickTime = 0;
 const DOUBLE_CLICK_DELAY = 100;
 
-// 修改色轮的事件监听
+// 色轮的鼠标事件处理
 colorWheel.addEventListener('mousedown', (e) => {
     const currentTime = new Date().getTime();
     const timeDiff = currentTime - lastClickTime;
@@ -162,6 +167,7 @@ colorWheel.addEventListener('mousedown', (e) => {
         e.preventDefault();
         e.stopPropagation();
         
+        // 重置到中心白色
         const wheelRect = colorWheel.getBoundingClientRect();
         const centerX = wheelRect.width / 2;
         const centerY = wheelRect.height / 2;
@@ -175,10 +181,8 @@ colorWheel.addEventListener('mousedown', (e) => {
         updateColor();
         
         document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
-        
-        isPickingColor = false;
     } else {
-        // 单击处理
+        // 单击和拖动处理
         isPickingColor = true;
         handleColorWheelInteraction(e);
     }
@@ -186,7 +190,7 @@ colorWheel.addEventListener('mousedown', (e) => {
     lastClickTime = currentTime;
 });
 
-// 修改移动和抬起事件
+// 全局鼠标移动事件
 document.addEventListener('mousemove', (e) => {
     if (isPickingColor) {
         e.preventDefault();
@@ -194,6 +198,7 @@ document.addEventListener('mousemove', (e) => {
     }
 });
 
+// 全局鼠标抬起事件
 document.addEventListener('mouseup', () => {
     isPickingColor = false;
 });
@@ -217,6 +222,7 @@ function handleColorWheelInteraction(e) {
         colorPickerHandle.style.left = `${clientX - rect.left}px`;
         colorPickerHandle.style.top = `${clientY - rect.top}px`;
         
+        // 计算角度（0度在右侧，顺时针增加）
         let angle = Math.atan2(y, x) * 180 / Math.PI;
         if (angle < 0) angle += 360;
         
