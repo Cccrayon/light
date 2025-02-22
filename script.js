@@ -125,24 +125,6 @@ function createColorWheel(canvas) {
     ctx.fill();
 }
 
-// 更新颜色显示
-function updateColor() {
-    const bright = currentBrightness / 100;
-    
-    if (bright <= 1) {
-        colorDisplay.style.filter = `brightness(${bright})`;
-    } else {
-        const contrastValue = 1 + (bright - 1) * 0.5;
-        const brightnessValue = 1 + (bright - 1) * 0.7;
-        colorDisplay.style.filter = `contrast(${contrastValue}) brightness(${brightnessValue})`;
-    }
-    
-    const { r, g, b } = currentRGB;
-    colorDisplay.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
-    colorPreview.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
-    brightnessValue.textContent = `${Math.round(currentBrightness)}%`;
-}
-
 // 修改预设颜色点击处理
 document.querySelectorAll('.color-preset').forEach(preset => {
     preset.addEventListener('click', () => {
@@ -152,16 +134,16 @@ document.querySelectorAll('.color-preset').forEach(preset => {
         const [r, g, b] = preset.dataset.color.split(',');
         currentRGB = { r: parseInt(r), g: parseInt(g), b: parseInt(b) };
         
-        // 获取颜色的 HSV 值
+        // 获取颜色的 HSV 值并更新亮度
         const { h, s, v } = rgbToHsv(currentRGB.r, currentRGB.g, currentRGB.b);
-        
-        // 更新亮度值和滑块位置
-        currentBrightness = v * 100;
+        currentBrightness = Math.round(v * 100);
         brightnessSlider.value = currentBrightness;
+        brightnessValue.textContent = `${currentBrightness}%`;
         
-        // 更新色轮选择器位置（这里不需要再次更新亮度，因为 updatePickerPosition 已经包含了亮度更新）
+        // 更新色轮选择器位置
         updatePickerPosition(currentRGB.r, currentRGB.g, currentRGB.b);
         
+        // 最后更新颜色显示
         updateColor();
     });
 });
@@ -532,4 +514,22 @@ function updatePickerPosition(r, g, b) {
     
     colorPickerHandle.style.left = `${x}px`;
     colorPickerHandle.style.top = `${y}px`;
+}
+
+// 修改更新颜色显示函数
+function updateColor() {
+    const bright = currentBrightness / 100;
+    
+    if (bright <= 1) {
+        colorDisplay.style.filter = `brightness(${bright})`;
+    } else {
+        const contrastValue = 1 + (bright - 1) * 0.5;
+        const brightnessValue = 1 + (bright - 1) * 0.7;
+        colorDisplay.style.filter = `contrast(${contrastValue}) brightness(${brightnessValue})`;
+    }
+    
+    const { r, g, b } = currentRGB;
+    colorDisplay.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+    colorPreview.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+    brightnessValue.textContent = `${Math.round(currentBrightness)}%`;
 } 
