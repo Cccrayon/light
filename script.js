@@ -230,8 +230,12 @@ async function initCamera() {
         stream = await navigator.mediaDevices.getUserMedia(constraints);
         videoPreview.srcObject = stream;
         
-        // 移除视频镜像效果
-        videoPreview.style.transform = 'scaleX(1)';
+        // 根据设备类型设置视频方向
+        if (isMobile) {
+            videoPreview.style.transform = 'scaleX(-1)'; // 前置摄像头需要镜像
+        } else {
+            videoPreview.style.transform = 'scaleX(1)'; // 后置摄像头不需要镜像
+        }
         
         cameraContainer.style.display = 'block';
         
@@ -262,13 +266,19 @@ function stopCamera() {
 
 function takePhoto() {
     const canvas = document.createElement('canvas');
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isMobile = /iPad|iPhone|iPod/.test(navigator.userAgent);
     
     canvas.width = videoPreview.videoWidth;
     canvas.height = videoPreview.videoHeight;
     
     const ctx = canvas.getContext('2d');
-    // 移除镜像翻转
+    
+    if (isMobile) {
+        // 移动设备前置摄像头需要镜像处理
+        ctx.scale(-1, 1);
+        ctx.translate(-canvas.width, 0);
+    }
+    
     ctx.drawImage(videoPreview, 0, 0);
     
     if (isIOS) {
