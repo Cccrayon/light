@@ -339,7 +339,6 @@ function stopCamera() {
 function takePhoto() {
     const canvas = document.createElement('canvas');
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    const isChrome = /Chrome/i.test(navigator.userAgent);
     
     canvas.width = videoPreview.videoWidth;
     canvas.height = videoPreview.videoHeight;
@@ -349,23 +348,17 @@ function takePhoto() {
     // 先重置任何可能的变换
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     
-    // Chrome 桌面版需要特殊处理
-    if (isChrome && !isMobile) {
-        // 不进行镜像处理，保持原样
-        ctx.drawImage(videoPreview, 0, 0);
-    }
-    // 移动设备前置摄像头需要镜像处理
-    else if (isMobile) {
+    // 检查视频是否已经被镜像
+    const videoStyle = window.getComputedStyle(videoPreview);
+    const isVideoMirrored = videoStyle.transform.includes('scale(-1');
+    
+    // 如果视频已经被镜像，则在拍照时需要反向处理
+    if (isVideoMirrored) {
         ctx.translate(canvas.width, 0);
         ctx.scale(-1, 1);
-        ctx.drawImage(videoPreview, 0, 0);
     }
-    // 其他浏览器
-    else {
-        ctx.translate(canvas.width, 0);
-        ctx.scale(-1, 1);
-        ctx.drawImage(videoPreview, 0, 0);
-    }
+    
+    ctx.drawImage(videoPreview, 0, 0);
     
     // 重置变换以确保后续操作不受影响
     ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -476,7 +469,7 @@ initColorPicker();
 
 // 修改色轮双击事件处理，缩短判定时间
 let lastClickTime = 0;
-const DOUBLE_CLICK_DELAY = 50; // 缩短到50毫秒
+const DOUBLE_CLICK_DELAY = 100; // 缩短到100毫秒
 
 colorWheel.addEventListener('click', (e) => {
     const currentTime = new Date().getTime();
