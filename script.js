@@ -82,8 +82,8 @@ function createColorWheel(canvas) {
 
         for (let dist = 0; dist <= radius; dist++) {
             const saturation = dist / radius;
-            // 调整角度计算，使其与交互时的角度对应
-            const hue = ((360 - angle + 90) % 360) / 360;
+            // 修正角度映射
+            const hue = (angle + 90) % 360 / 360;
             const [r, g, b] = hsvToRgb(hue, saturation, 1);
             
             ctx.beginPath();
@@ -157,10 +157,10 @@ function handleColorWheelInteraction(e) {
         colorPickerHandle.style.left = `${clientX - rect.left}px`;
         colorPickerHandle.style.top = `${clientY - rect.top}px`;
         
-        // 修正角度计算，使其与色轮渲染时的角度对应
+        // 修正角度计算
         let angle = Math.atan2(y, x) * 180 / Math.PI;
         if (angle < 0) angle += 360;
-        angle = (360 - angle + 90) % 360; // 调整角度使其与色轮渲染对应
+        angle = (angle + 90) % 360; // 修正角度映射
         
         const saturation = Math.min(distance / maxDistance, 1);
         const [r, g, b] = hsvToRgb(angle / 360, saturation, 1);
