@@ -138,11 +138,10 @@ document.querySelectorAll('.color-preset').forEach(preset => {
 
 // 修改色轮交互函数
 function handleColorWheelInteraction(e) {
-    const rect = colorWheel.getBoundingClientRect(); // 使用 colorWheel 而不是 canvas
+    const rect = colorWheel.getBoundingClientRect();
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
     
-    // 获取坐标，支持鼠标和触摸事件
     const clientX = e.clientX || e.touches[0].clientX;
     const clientY = e.clientY || e.touches[0].clientY;
     
@@ -153,15 +152,13 @@ function handleColorWheelInteraction(e) {
     const maxDistance = rect.width / 2;
     
     if (distance <= maxDistance) {
-        // 更新选择器位置
         colorPickerHandle.style.left = `${clientX - rect.left}px`;
         colorPickerHandle.style.top = `${clientY - rect.top}px`;
         
-        // 计算角度和饱和度
-        let angle = Math.atan2(y, x) * 180 / Math.PI + 180;
+        // 修正角度计算
+        let angle = (Math.atan2(-y, -x) * 180 / Math.PI + 360) % 360;
         const saturation = Math.min(distance / maxDistance, 1);
         
-        // 转换为 RGB
         const [r, g, b] = hsvToRgb(angle / 360, saturation, 1);
         currentRGB = { r, g, b };
         updateColor();
@@ -225,10 +222,11 @@ brightnessSlider.addEventListener('touchmove', (e) => {
     updateColor();
 }, { passive: false });
 
-// 控制面板拖动
+// 修改控制面板拖动逻辑
 controlPanel.addEventListener('mousedown', (e) => {
     if (e.target.classList.contains('toggle-button') || 
         e.target.classList.contains('color-wheel') ||
+        e.target.classList.contains('color-preset') ||
         e.target.type === 'range') return;
     
     isDragging = true;
@@ -239,10 +237,16 @@ controlPanel.addEventListener('mousedown', (e) => {
 
 document.addEventListener('mousemove', (e) => {
     if (isDragging) {
+        e.preventDefault(); // 防止选中文本
         const x = e.clientX - initialX;
         const y = e.clientY - initialY;
-        controlPanel.style.left = `${x}px`;
-        controlPanel.style.top = `${y}px`;
+        
+        // 防止面板拖出屏幕
+        const maxX = window.innerWidth - controlPanel.offsetWidth;
+        const maxY = window.innerHeight - controlPanel.offsetHeight;
+        
+        controlPanel.style.left = `${Math.max(0, Math.min(x, maxX))}px`;
+        controlPanel.style.top = `${Math.max(0, Math.min(y, maxY))}px`;
         controlPanel.style.right = 'auto';
         controlPanel.style.bottom = 'auto';
     }
