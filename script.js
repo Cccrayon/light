@@ -57,6 +57,38 @@ function hsvToRgb(h, s, v) {
     ];
 }
 
+// 添加 RGB 转 HSV 的函数
+function rgbToHsv(r, g, b) {
+    r /= 255;
+    g /= 255;
+    b /= 255;
+
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const diff = max - min;
+
+    let h = 0;
+    let s = max === 0 ? 0 : diff / max;
+    let v = max;
+
+    if (diff !== 0) {
+        switch (max) {
+            case r:
+                h = (g - b) / diff + (g < b ? 6 : 0);
+                break;
+            case g:
+                h = (b - r) / diff + 2;
+                break;
+            case b:
+                h = (r - g) / diff + 4;
+                break;
+        }
+        h /= 6;
+    }
+
+    return { h: h * 360, s, v };
+}
+
 // 修改色轮创建函数
 function createColorWheel(canvas) {
     const ctx = canvas.getContext('2d');
@@ -121,6 +153,27 @@ function updateColor() {
     brightnessValue.textContent = `${Math.round(currentBrightness)}%`;
 }
 
+// 添加更新色轮选择器位置的函数
+function updatePickerPosition(r, g, b) {
+    const { h, s } = rgbToHsv(r, g, b);
+    const wheelRect = colorWheel.getBoundingClientRect();
+    const radius = wheelRect.width / 2;
+    const centerX = radius;
+    const centerY = radius;
+    
+    // 将角度转换为弧度，并调整偏移
+    const angleRad = ((h - 90) % 360) * Math.PI / 180;
+    
+    // 计算新位置
+    const distance = s * radius;
+    const x = centerX + distance * Math.cos(angleRad);
+    const y = centerY + distance * Math.sin(angleRad);
+    
+    // 更新选择器位置
+    colorPickerHandle.style.left = `${x}px`;
+    colorPickerHandle.style.top = `${y}px`;
+}
+
 // 修改预设颜色点击处理
 document.querySelectorAll('.color-preset').forEach(preset => {
     preset.addEventListener('click', () => {
@@ -133,6 +186,9 @@ document.querySelectorAll('.color-preset').forEach(preset => {
         // 重置亮度到100%
         currentBrightness = 100;
         brightnessSlider.value = 100;
+        
+        // 更新色轮选择器位置
+        updatePickerPosition(currentRGB.r, currentRGB.g, currentRGB.b);
         
         updateColor();
     });
