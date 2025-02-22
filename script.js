@@ -125,15 +125,6 @@ function createColorWheel(canvas) {
     ctx.fill();
 }
 
-// 删除所有重复的事件监听器
-colorWheel.removeEventListener('mousedown', null);
-document.removeEventListener('mousemove', null);
-document.removeEventListener('mouseup', null);
-
-// 色轮操作相关变量
-let lastClickTime = 0;
-const DOUBLE_CLICK_DELAY = 100;
-
 // 色轮交互函数
 function handleColorWheelInteraction(e) {
     const rect = colorWheel.getBoundingClientRect();
@@ -150,69 +141,35 @@ function handleColorWheelInteraction(e) {
     const maxDistance = rect.width / 2;
     
     if (distance <= maxDistance) {
-        // 更新选择器位置
         colorPickerHandle.style.left = `${clientX - rect.left}px`;
         colorPickerHandle.style.top = `${clientY - rect.top}px`;
         
-        // 计算角度和饱和度
         let angle = Math.atan2(y, x) * 180 / Math.PI;
         if (angle < 0) angle += 360;
         const saturation = Math.min(distance / maxDistance, 1);
         
-        // 更新颜色
         const [r, g, b] = hsvToRgb(angle / 360, saturation, 1);
         currentRGB = { r, g, b };
         updateColor();
         
-        // 清除预设颜色的选中状态
         document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
     }
 }
 
-// 重置到中心白色
-function resetToCenter() {
-    const wheelRect = colorWheel.getBoundingClientRect();
-    const centerX = wheelRect.width / 2;
-    const centerY = wheelRect.height / 2;
-    
-    colorPickerHandle.style.left = `${centerX}px`;
-    colorPickerHandle.style.top = `${centerY}px`;
-    
-    currentRGB = { r: 255, g: 255, b: 255 };
-    currentBrightness = 100;
-    brightnessSlider.value = 100;
-    updateColor();
-    
-    document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
-}
-
 // 色轮鼠标事件
-colorWheel.addEventListener('mousedown', (e) => {
-    e.preventDefault();
-    const currentTime = new Date().getTime();
-    const timeDiff = currentTime - lastClickTime;
-    
-    if (timeDiff < DOUBLE_CLICK_DELAY) {
-        // 双击处理
-        resetToCenter();
-    } else {
-        // 单击和拖动处理
-        isPickingColor = true;
-        handleColorWheelInteraction(e);
-    }
-    
-    lastClickTime = currentTime;
+colorWheel.addEventListener('mousedown', function(e) {
+    isPickingColor = true;
+    handleColorWheelInteraction(e);
 });
 
-// 全局鼠标事件
-document.addEventListener('mousemove', (e) => {
+document.addEventListener('mousemove', function(e) {
     if (isPickingColor) {
         e.preventDefault();
         handleColorWheelInteraction(e);
     }
 });
 
-document.addEventListener('mouseup', () => {
+document.addEventListener('mouseup', function() {
     isPickingColor = false;
 });
 
@@ -271,15 +228,25 @@ createColorWheel(canvas);
 updateColor();
 initColorPicker();
 
-// 修改色轮选择器初始位置设置
-function initColorPicker() {
+// 双击事件处理
+colorWheel.addEventListener('dblclick', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    
     const wheelRect = colorWheel.getBoundingClientRect();
     const centerX = wheelRect.width / 2;
     const centerY = wheelRect.height / 2;
     
     colorPickerHandle.style.left = `${centerX}px`;
     colorPickerHandle.style.top = `${centerY}px`;
-}
+    
+    currentRGB = { r: 255, g: 255, b: 255 };
+    currentBrightness = 100;
+    brightnessSlider.value = 100;
+    updateColor();
+    
+    document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
+});
 
 // 修改色轮双击事件处理
 colorWheel.addEventListener('mousedown', (e) => {
@@ -511,95 +478,4 @@ document.addEventListener('touchend', () => {
 // 事件监听
 openCameraBtn.addEventListener('click', initCamera);
 closeCamera.addEventListener('click', stopCamera);
-takePhotoBtn.addEventListener('click', takePhoto);
-
-// 修改色轮选择器初始位置设置
-function initColorPicker() {
-    const wheelRect = colorWheel.getBoundingClientRect();
-    const centerX = wheelRect.width / 2;
-    const centerY = wheelRect.height / 2;
-    
-    colorPickerHandle.style.left = `${centerX}px`;
-    colorPickerHandle.style.top = `${centerY}px`;
-}
-
-initColorPicker();
-
-// 修改色轮双击事件处理
-colorWheel.addEventListener('mousedown', (e) => {
-    const currentTime = new Date().getTime();
-    const timeDiff = currentTime - lastClickTime;
-    
-    if (timeDiff < DOUBLE_CLICK_DELAY) {
-        // 双击处理
-        e.preventDefault();
-        e.stopPropagation(); // 阻止事件冒泡
-        
-        // 重置选择器位置到中心
-        const wheelRect = colorWheel.getBoundingClientRect();
-        const centerX = wheelRect.width / 2;
-        const centerY = wheelRect.height / 2;
-        
-        requestAnimationFrame(() => {
-            colorPickerHandle.style.left = `${centerX}px`;
-            colorPickerHandle.style.top = `${centerY}px`;
-            
-            // 设置为白色
-            currentRGB = { r: 255, g: 255, b: 255 };
-            currentBrightness = 100;
-            brightnessSlider.value = 100;
-            updateColor();
-            
-            // 移除所有预设颜色的激活状态
-            document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
-        });
-        
-        // 防止触发正常的颜色选择
-        isPickingColor = false;
-        return;
-    }
-    
-    // 正常的颜色选择处理
-    isPickingColor = true;
-    handleColorWheelInteraction(e);
-    
-    lastClickTime = currentTime;
-});
-
-// 修改更新色轮选择器位置的函数，移除重复的亮度更新
-function updatePickerPosition(r, g, b) {
-    const { h, s, v } = rgbToHsv(r, g, b);
-    const wheelRect = colorWheel.getBoundingClientRect();
-    const radius = wheelRect.width / 2;
-    const centerX = radius;
-    const centerY = radius;
-    
-    // 计算角度（0度在右侧，顺时针增加）
-    const angleRad = (h * Math.PI) / 180;
-    
-    // 计算新位置，考虑明度的影响
-    const distance = s * radius; // 饱和度决定离中心的距离
-    const x = centerX + distance * Math.cos(angleRad);
-    const y = centerY + distance * Math.sin(angleRad);
-    
-    colorPickerHandle.style.left = `${x}px`;
-    colorPickerHandle.style.top = `${y}px`;
-}
-
-// 修改更新颜色显示函数
-function updateColor() {
-    const bright = currentBrightness / 100;
-    
-    if (bright <= 1) {
-        colorDisplay.style.filter = `brightness(${bright})`;
-    } else {
-        const contrastValue = 1 + (bright - 1) * 0.5;
-        const brightnessValue = 1 + (bright - 1) * 0.7;
-        colorDisplay.style.filter = `contrast(${contrastValue}) brightness(${brightnessValue})`;
-    }
-    
-    const { r, g, b } = currentRGB;
-    colorDisplay.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
-    colorPreview.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
-    brightnessValue.textContent = `${Math.round(currentBrightness)}%`;
-} 
+takePhotoBtn.addEventListener('click', takePhoto); 
