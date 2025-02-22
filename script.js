@@ -224,10 +224,14 @@ brightnessSlider.addEventListener('touchmove', (e) => {
 
 // 修改控制面板拖动逻辑
 controlPanel.addEventListener('mousedown', (e) => {
-    if (e.target.classList.contains('toggle-button') || 
-        e.target.classList.contains('color-wheel') ||
+    // 如果点击的是色轮区域或其他控制元素，不触发拖动
+    if (e.target.closest('.color-wheel-container') || // 使用 closest 检查是否点击色轮区域
+        e.target.classList.contains('toggle-button') || 
         e.target.classList.contains('color-preset') ||
-        e.target.type === 'range') return;
+        e.target.type === 'range' ||
+        e.target.classList.contains('brightness-control')) {
+        return;
+    }
     
     isDragging = true;
     const rect = controlPanel.getBoundingClientRect();
@@ -432,6 +436,15 @@ takePhotoBtn.addEventListener('click', takePhoto);
 createColorWheel(canvas);
 updateColor();
 
-// 初始化色轮选择器位置（白色在中心）
-colorPickerHandle.style.left = `${canvas.width / 2}px`;
-colorPickerHandle.style.top = `${canvas.height / 2}px`; 
+// 修改色轮选择器初始位置设置
+function initColorPicker() {
+    // 设置选择器初始位置为色轮中心
+    const wheelRect = colorWheel.getBoundingClientRect();
+    const centerX = wheelRect.width / 2;
+    const centerY = wheelRect.height / 2;
+    
+    colorPickerHandle.style.left = `${centerX}px`;
+    colorPickerHandle.style.top = `${centerY}px`;
+}
+
+initColorPicker(); 
