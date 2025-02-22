@@ -26,11 +26,6 @@ let isCameraDragging = false;
 let initialX, initialY;
 let cameraDragX, cameraDragY;
 
-// 添加双击相关变量
-let lastColorPickerClickTime = 0;
-let lastBrightnessClickTime = 0;
-const DOUBLE_CLICK_DELAY = 200;
-
 // 色轮控制点相关变量
 let isHandleDragging = false;
 let handleInitialX, handleInitialY;
@@ -448,26 +443,6 @@ brightnessSlider.addEventListener('change', function() {
     updateColor();
 });
 
-// 亮度滑块双击处理
-let lastBrightnessClickTime = 0;
-const DOUBLE_CLICK_DELAY = 200; // 增加延迟时间以便更容易触发
-
-brightnessSlider.addEventListener('mousedown', function(e) {
-    const currentTime = new Date().getTime();
-    const timeDiff = currentTime - lastBrightnessClickTime;
-    
-    if (timeDiff < DOUBLE_CLICK_DELAY) {
-        // 双击处理
-        e.preventDefault();
-        currentBrightness = 100;
-        this.value = 100;
-        brightnessValue.textContent = '100%';
-        updateColor();
-    }
-    
-    lastBrightnessClickTime = currentTime;
-});
-
 // 色轮控制点双击处理
 let lastPickerClickTime = 0;
 
@@ -505,7 +480,7 @@ colorPickerHandle.addEventListener('mousedown', function(e) {
 // 添加触摸设备支持
 brightnessSlider.addEventListener('touchstart', function(e) {
     const currentTime = new Date().getTime();
-    const timeDiff = currentTime - lastBrightnessClickTime;
+    const timeDiff = currentTime - lastPickerClickTime;
     
     if (timeDiff < DOUBLE_CLICK_DELAY) {
         // 双击处理
@@ -516,39 +491,23 @@ brightnessSlider.addEventListener('touchstart', function(e) {
         updateColor();
     }
     
-    lastBrightnessClickTime = currentTime;
+    lastPickerClickTime = currentTime;
 }, { passive: false });
 
-// 添加控制点拖动事件
+// 修改控制点的拖动事件
 document.addEventListener('mousemove', function(e) {
     if (isHandleDragging) {
         e.preventDefault();
-        const rect = colorWheel.getBoundingClientRect();
-        const centerX = rect.width / 2;
-        const centerY = rect.height / 2;
-        
-        const x = e.clientX - rect.left - centerX;
-        const y = e.clientY - rect.top - centerY;
-        
-        const distance = Math.sqrt(x*x + y*y);
-        const maxDistance = rect.width / 2;
-        
-        if (distance <= maxDistance) {
-            colorPickerHandle.style.left = `${e.clientX - rect.left}px`;
-            colorPickerHandle.style.top = `${e.clientY - rect.top}px`;
-            
-            let angle = Math.atan2(y, x) * 180 / Math.PI;
-            if (angle < 0) angle += 360;
-            const saturation = Math.min(distance / maxDistance, 1);
-            
-            const [r, g, b] = hsvToRgb(angle / 360, saturation, 1);
-            currentRGB = { r, g, b };
-            updateColor();
-            
-            document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
-        }
+        handleColorWheelInteraction(e);
     }
 });
+
+document.addEventListener('touchmove', function(e) {
+    if (isHandleDragging) {
+        e.preventDefault();
+        handleColorWheelInteraction(e.touches[0]);
+    }
+}, { passive: false });
 
 document.addEventListener('mouseup', function() {
     isHandleDragging = false;
