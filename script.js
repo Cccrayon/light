@@ -57,29 +57,30 @@ function hsvToRgb(h, s, v) {
     ];
 }
 
-// 修改色轮创建函数，使用更平滑的渲染方式
+// 修改色轮创建函数
 function createColorWheel(canvas) {
     const ctx = canvas.getContext('2d');
+    const radius = Math.min(canvas.width, canvas.height) / 2;
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
-    const radius = canvas.width / 2;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // 使用更高的分辨率来渲染
     const scale = 2;
-    canvas.style.width = canvas.width + 'px';
-    canvas.style.height = canvas.height + 'px';
-    canvas.width = canvas.width * scale;
-    canvas.height = canvas.height * scale;
+    const displaySize = canvas.width;
+    canvas.style.width = displaySize + 'px';
+    canvas.style.height = displaySize + 'px';
+    canvas.width = displaySize * scale;
+    canvas.height = displaySize * scale;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.scale(scale, scale);
 
     // 使用渐变来创建更平滑的色轮
-    for (let angle = 0; angle < 360; angle += 1) {
+    for (let angle = 0; angle < 360; angle += 0.5) {
         const startAngle = (angle - 0.5) * Math.PI / 180;
         const endAngle = (angle + 0.5) * Math.PI / 180;
 
-        for (let dist = 0; dist < radius; dist++) {
+        for (let dist = 0; dist <= radius; dist++) {
             const saturation = dist / radius;
             const [r, g, b] = hsvToRgb(angle / 360, saturation, 1);
             
@@ -135,9 +136,9 @@ document.querySelectorAll('.color-preset').forEach(preset => {
     });
 });
 
-// 优化色轮的触摸交互
+// 修改色轮交互函数
 function handleColorWheelInteraction(e) {
-    const rect = canvas.getBoundingClientRect();
+    const rect = colorWheel.getBoundingClientRect(); // 使用 colorWheel 而不是 canvas
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
     
@@ -152,19 +153,38 @@ function handleColorWheelInteraction(e) {
     const maxDistance = rect.width / 2;
     
     if (distance <= maxDistance) {
+        // 更新选择器位置
         colorPickerHandle.style.left = `${clientX - rect.left}px`;
         colorPickerHandle.style.top = `${clientY - rect.top}px`;
         
-        let angle = Math.atan2(-y, -x) * 180 / Math.PI;
-        if (angle < 0) angle += 360;
-        
+        // 计算角度和饱和度
+        let angle = Math.atan2(y, x) * 180 / Math.PI + 180;
         const saturation = Math.min(distance / maxDistance, 1);
-        const [r, g, b] = hsvToRgb(angle / 360, saturation, 1);
         
+        // 转换为 RGB
+        const [r, g, b] = hsvToRgb(angle / 360, saturation, 1);
         currentRGB = { r, g, b };
         updateColor();
     }
 }
+
+// 修改色轮的事件监听
+colorWheel.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    isPickingColor = true;
+    handleColorWheelInteraction(e);
+});
+
+document.addEventListener('mousemove', (e) => {
+    if (isPickingColor) {
+        e.preventDefault();
+        handleColorWheelInteraction(e);
+    }
+});
+
+document.addEventListener('mouseup', () => {
+    isPickingColor = false;
+});
 
 // 修改色轮的触摸事件处理
 colorWheel.addEventListener('touchstart', (e) => {
@@ -181,22 +201,6 @@ colorWheel.addEventListener('touchmove', (e) => {
 }, { passive: false });
 
 document.addEventListener('touchend', () => {
-    isPickingColor = false;
-});
-
-// 修改色轮的鼠标事件处理
-colorWheel.addEventListener('mousedown', (e) => {
-    isPickingColor = true;
-    handleColorWheelInteraction(e);
-});
-
-document.addEventListener('mousemove', (e) => {
-    if (isPickingColor) {
-        handleColorWheelInteraction(e);
-    }
-});
-
-document.addEventListener('mouseup', () => {
     isPickingColor = false;
 });
 
