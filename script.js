@@ -180,27 +180,6 @@ document.addEventListener('mouseup', function() {
     isPickingColor = false;
 });
 
-// 双击事件处理
-colorWheel.addEventListener('dblclick', function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    isPickingColor = false;
-    
-    const wheelRect = colorWheel.getBoundingClientRect();
-    const centerX = wheelRect.width / 2;
-    const centerY = wheelRect.height / 2;
-    
-    colorPickerHandle.style.left = `${centerX}px`;
-    colorPickerHandle.style.top = `${centerY}px`;
-    
-    currentRGB = { r: 255, g: 255, b: 255 };
-    currentBrightness = 100;
-    brightnessSlider.value = 100;
-    updateColor();
-    
-    document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
-});
-
 // 色轮触摸事件
 colorWheel.addEventListener('touchstart', (e) => {
     e.preventDefault();
