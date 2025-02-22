@@ -273,19 +273,27 @@ function takePhoto() {
     
     const ctx = canvas.getContext('2d');
     
+    // 先重置任何可能的变换
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    
     if (isMobile) {
         // 移动设备前置摄像头需要镜像处理
+        ctx.translate(canvas.width, 0);
         ctx.scale(-1, 1);
-        ctx.translate(-canvas.width, 0);
     }
     
     ctx.drawImage(videoPreview, 0, 0);
     
+    // 重置变换以确保后续操作不受影响
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    
+    // 生成正确方向的照片数据
+    const photoData = canvas.toDataURL('image/jpeg', 0.95);
+    
     if (isMobile) {
         // 移动设备使用新窗口显示
-        const image = canvas.toDataURL('image/jpeg', 0.95);
         const newWindow = window.open();
-        newWindow.document.write(`<img src="${image}" alt="photo">`);
+        newWindow.document.write(`<img src="${photoData}" alt="photo">`);
         newWindow.document.write('<div style="text-align:center;margin-top:20px;">长按图片保存到相册</div>');
     } else {
         // 其他设备直接下载
@@ -300,7 +308,8 @@ function takePhoto() {
     }
     
     // 预览拍摄的照片
-    capturedPhoto.src = canvas.toDataURL('image/jpeg');
+    capturedPhoto.src = photoData;
+    capturedPhoto.style.transform = 'scaleX(1)'; // 确保预览图片不会镜像
     videoPreview.style.display = 'none';
     capturedPhoto.style.display = 'block';
     
