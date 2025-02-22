@@ -92,26 +92,11 @@ function rgbToHsv(r, g, b) {
 // 修改色轮创建函数
 function createColorWheel(canvas) {
     const ctx = canvas.getContext('2d');
-    const displaySize = canvas.width;
-    const scale = 2;
-    
-    // 保存原始尺寸
-    const originalWidth = canvas.width;
-    const originalHeight = canvas.height;
-    
-    // 设置显示尺寸
-    canvas.style.width = `${displaySize}px`;
-    canvas.style.height = `${displaySize}px`;
-    
-    // 设置画布尺寸
-    canvas.width = displaySize * scale;
-    canvas.height = displaySize * scale;
-    
-    const radius = (displaySize * scale) / 4; // 调整半径以适应缩放
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    
-    ctx.scale(scale, scale);
+    const radius = canvas.width / 2;
+    const centerX = radius;
+    const centerY = radius;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // 使用渐变来创建更平滑的色轮
     for (let angle = 0; angle < 360; angle += 0.5) {
@@ -120,8 +105,7 @@ function createColorWheel(canvas) {
 
         for (let dist = 0; dist <= radius; dist++) {
             const saturation = dist / radius;
-            // 修正角度映射
-            const hue = (angle + 90) % 360 / 360;
+            const hue = angle / 360;
             const [r, g, b] = hsvToRgb(hue, saturation, 1);
             
             ctx.beginPath();
@@ -167,19 +151,16 @@ function updatePickerPosition(r, g, b) {
     const centerX = radius;
     const centerY = radius;
     
-    // 修正角度计算，使其与色轮渲染对应
-    const angleRad = ((h + 90) % 360) * Math.PI / 180;
+    // 计算角度（0度在右侧，顺时针增加）
+    const angleRad = (h * Math.PI) / 180;
     
     // 计算新位置
     const distance = s * radius;
     const x = centerX + distance * Math.cos(angleRad);
     const y = centerY + distance * Math.sin(angleRad);
     
-    // 更新选择器位置
-    requestAnimationFrame(() => {
-        colorPickerHandle.style.left = `${x}px`;
-        colorPickerHandle.style.top = `${y}px`;
-    });
+    colorPickerHandle.style.left = `${x}px`;
+    colorPickerHandle.style.top = `${y}px`;
 }
 
 // 修改预设颜色点击处理
@@ -221,10 +202,9 @@ function handleColorWheelInteraction(e) {
         colorPickerHandle.style.left = `${clientX - rect.left}px`;
         colorPickerHandle.style.top = `${clientY - rect.top}px`;
         
-        // 修正角度计算
+        // 计算角度（0度在右侧，顺时针增加）
         let angle = Math.atan2(y, x) * 180 / Math.PI;
         if (angle < 0) angle += 360;
-        angle = (angle + 90) % 360; // 修正角度映射
         
         const saturation = Math.min(distance / maxDistance, 1);
         const [r, g, b] = hsvToRgb(angle / 360, saturation, 1);
@@ -520,24 +500,19 @@ initColorPicker();
 
 // 修改色轮双击事件处理
 colorWheel.addEventListener('dblclick', (e) => {
-    e.preventDefault(); // 防止双击选中文本
+    e.preventDefault();
     
-    // 重置选择器位置到中心
     const wheelRect = colorWheel.getBoundingClientRect();
     const centerX = wheelRect.width / 2;
     const centerY = wheelRect.height / 2;
     
-    requestAnimationFrame(() => {
-        colorPickerHandle.style.left = `${centerX}px`;
-        colorPickerHandle.style.top = `${centerY}px`;
-        
-        // 设置为白色
-        currentRGB = { r: 255, g: 255, b: 255 };
-        currentBrightness = 100;
-        brightnessSlider.value = 100;
-        updateColor();
-        
-        // 移除所有预设颜色的激活状态
-        document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
-    });
+    colorPickerHandle.style.left = `${centerX}px`;
+    colorPickerHandle.style.top = `${centerY}px`;
+    
+    currentRGB = { r: 255, g: 255, b: 255 };
+    currentBrightness = 100;
+    brightnessSlider.value = 100;
+    updateColor();
+    
+    document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
 }); 
