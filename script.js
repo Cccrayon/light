@@ -29,7 +29,7 @@ let cameraDragX, cameraDragY;
 // 添加双击相关变量
 let lastColorPickerClickTime = 0;
 let lastBrightnessClickTime = 0;
-const DOUBLE_CLICK_DELAY = 100;
+const DOUBLE_CLICK_DELAY = 200;
 
 // 色轮控制点相关变量
 let isHandleDragging = false;
@@ -435,54 +435,51 @@ openCameraBtn.addEventListener('click', initCamera);
 closeCamera.addEventListener('click', stopCamera);
 takePhotoBtn.addEventListener('click', takePhoto);
 
-// 修改亮度滑块相关代码
+// 亮度滑块事件处理
 brightnessSlider.addEventListener('input', function() {
-    currentBrightness = parseFloat(this.value);
+    currentBrightness = parseInt(this.value);
+    brightnessValue.textContent = `${currentBrightness}%`;
     updateColor();
 });
 
-// 修改亮度滑块的双击处理
+brightnessSlider.addEventListener('change', function() {
+    currentBrightness = parseInt(this.value);
+    brightnessValue.textContent = `${currentBrightness}%`;
+    updateColor();
+});
+
+// 亮度滑块双击处理
+let lastBrightnessClickTime = 0;
+const DOUBLE_CLICK_DELAY = 200; // 增加延迟时间以便更容易触发
+
 brightnessSlider.addEventListener('mousedown', function(e) {
     const currentTime = new Date().getTime();
     const timeDiff = currentTime - lastBrightnessClickTime;
     
     if (timeDiff < DOUBLE_CLICK_DELAY) {
-        // 双击处理：重置亮度到100%
-        e.preventDefault(); // 防止触发正常的滑块操作
+        // 双击处理
+        e.preventDefault();
         currentBrightness = 100;
         this.value = 100;
+        brightnessValue.textContent = '100%';
         updateColor();
     }
     
     lastBrightnessClickTime = currentTime;
 });
 
-// 修改移动设备的亮度滑块双击处理
-brightnessSlider.addEventListener('touchstart', function(e) {
-    const currentTime = new Date().getTime();
-    const timeDiff = currentTime - lastBrightnessClickTime;
-    
-    if (timeDiff < DOUBLE_CLICK_DELAY) {
-        // 双击处理：重置亮度到100%
-        e.preventDefault(); // 防止触发正常的滑块操作
-        currentBrightness = 100;
-        this.value = 100;
-        updateColor();
-    }
-    
-    lastBrightnessClickTime = currentTime;
-}, { passive: false });
+// 色轮控制点双击处理
+let lastPickerClickTime = 0;
 
-// 修改色轮控制点的事件处理
 colorPickerHandle.addEventListener('mousedown', function(e) {
     e.preventDefault();
     e.stopPropagation();
     
     const currentTime = new Date().getTime();
-    const timeDiff = currentTime - lastColorPickerClickTime;
+    const timeDiff = currentTime - lastPickerClickTime;
     
     if (timeDiff < DOUBLE_CLICK_DELAY) {
-        // 双击处理：重置到中心白色
+        // 双击处理
         const wheelRect = colorWheel.getBoundingClientRect();
         const centerX = wheelRect.width / 2;
         const centerY = wheelRect.height / 2;
@@ -493,19 +490,34 @@ colorPickerHandle.addEventListener('mousedown', function(e) {
         currentRGB = { r: 255, g: 255, b: 255 };
         currentBrightness = 100;
         brightnessSlider.value = 100;
+        brightnessValue.textContent = '100%';
         updateColor();
         
         document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
     } else {
-        // 开始拖动
+        // 单击处理：开始拖动
         isHandleDragging = true;
-        const rect = colorWheel.getBoundingClientRect();
-        handleInitialX = e.clientX - rect.left;
-        handleInitialY = e.clientY - rect.top;
     }
     
-    lastColorPickerClickTime = currentTime;
+    lastPickerClickTime = currentTime;
 });
+
+// 添加触摸设备支持
+brightnessSlider.addEventListener('touchstart', function(e) {
+    const currentTime = new Date().getTime();
+    const timeDiff = currentTime - lastBrightnessClickTime;
+    
+    if (timeDiff < DOUBLE_CLICK_DELAY) {
+        // 双击处理
+        e.preventDefault();
+        currentBrightness = 100;
+        this.value = 100;
+        brightnessValue.textContent = '100%';
+        updateColor();
+    }
+    
+    lastBrightnessClickTime = currentTime;
+}, { passive: false });
 
 // 添加控制点拖动事件
 document.addEventListener('mousemove', function(e) {
@@ -548,7 +560,7 @@ colorPickerHandle.addEventListener('touchstart', function(e) {
     e.stopPropagation();
     
     const currentTime = new Date().getTime();
-    const timeDiff = currentTime - lastColorPickerClickTime;
+    const timeDiff = currentTime - lastPickerClickTime;
     
     if (timeDiff < DOUBLE_CLICK_DELAY) {
         // 双击处理
@@ -562,6 +574,7 @@ colorPickerHandle.addEventListener('touchstart', function(e) {
         currentRGB = { r: 255, g: 255, b: 255 };
         currentBrightness = 100;
         brightnessSlider.value = 100;
+        brightnessValue.textContent = '100%';
         updateColor();
         
         document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
@@ -573,5 +586,5 @@ colorPickerHandle.addEventListener('touchstart', function(e) {
         handleInitialY = e.touches[0].clientY - rect.top;
     }
     
-    lastColorPickerClickTime = currentTime;
+    lastPickerClickTime = currentTime;
 }, { passive: false }); 
