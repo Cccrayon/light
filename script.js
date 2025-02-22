@@ -195,9 +195,7 @@ document.addEventListener('mousemove', (e) => {
 });
 
 document.addEventListener('mouseup', () => {
-    if (isPickingColor) {
-        isPickingColor = false;
-    }
+    isPickingColor = false;
 });
 
 // 修改色轮交互函数
