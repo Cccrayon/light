@@ -266,7 +266,7 @@ function stopCamera() {
 
 function takePhoto() {
     const canvas = document.createElement('canvas');
-    const isMobile = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     
     canvas.width = videoPreview.videoWidth;
     canvas.height = videoPreview.videoHeight;
@@ -281,8 +281,8 @@ function takePhoto() {
     
     ctx.drawImage(videoPreview, 0, 0);
     
-    if (isIOS) {
-        // iOS设备使用新窗口显示
+    if (isMobile) {
+        // 移动设备使用新窗口显示
         const image = canvas.toDataURL('image/jpeg', 0.95);
         const newWindow = window.open();
         newWindow.document.write(`<img src="${image}" alt="photo">`);
@@ -299,6 +299,7 @@ function takePhoto() {
         }, 'image/jpeg', 0.95);
     }
     
+    // 预览拍摄的照片
     capturedPhoto.src = canvas.toDataURL('image/jpeg');
     videoPreview.style.display = 'none';
     capturedPhoto.style.display = 'block';
