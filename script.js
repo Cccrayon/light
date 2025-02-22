@@ -92,19 +92,25 @@ function rgbToHsv(r, g, b) {
 // 修改色轮创建函数
 function createColorWheel(canvas) {
     const ctx = canvas.getContext('2d');
-    const radius = Math.min(canvas.width, canvas.height) / 2;
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-
-    // 使用更高的分辨率来渲染
-    const scale = 2;
     const displaySize = canvas.width;
-    canvas.style.width = displaySize + 'px';
-    canvas.style.height = displaySize + 'px';
+    const scale = 2;
+    
+    // 保存原始尺寸
+    const originalWidth = canvas.width;
+    const originalHeight = canvas.height;
+    
+    // 设置显示尺寸
+    canvas.style.width = `${displaySize}px`;
+    canvas.style.height = `${displaySize}px`;
+    
+    // 设置画布尺寸
     canvas.width = displaySize * scale;
     canvas.height = displaySize * scale;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    const radius = (displaySize * scale) / 4; // 调整半径以适应缩放
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    
     ctx.scale(scale, scale);
 
     // 使用渐变来创建更平滑的色轮
@@ -162,16 +168,18 @@ function updatePickerPosition(r, g, b) {
     const centerY = radius;
     
     // 修正角度计算，使其与色轮渲染对应
-    const angleRad = ((h - 90) % 360) * Math.PI / 180;
+    const angleRad = ((h + 90) % 360) * Math.PI / 180;
     
-    // 计算新位置（注意三角函数要用负值来匹配坐标系）
+    // 计算新位置
     const distance = s * radius;
-    const x = centerX + distance * Math.cos(-angleRad);
-    const y = centerY + distance * Math.sin(-angleRad);
+    const x = centerX + distance * Math.cos(angleRad);
+    const y = centerY + distance * Math.sin(angleRad);
     
     // 更新选择器位置
-    colorPickerHandle.style.left = `${x}px`;
-    colorPickerHandle.style.top = `${y}px`;
+    requestAnimationFrame(() => {
+        colorPickerHandle.style.left = `${x}px`;
+        colorPickerHandle.style.top = `${y}px`;
+    });
 }
 
 // 修改预设颜色点击处理
@@ -498,31 +506,38 @@ updateColor();
 
 // 修改色轮选择器初始位置设置
 function initColorPicker() {
-    // 设置选择器初始位置为色轮中心
-    const wheelRect = colorWheel.getBoundingClientRect();
-    const centerX = wheelRect.width / 2;
-    const centerY = wheelRect.height / 2;
-    
-    colorPickerHandle.style.left = `${centerX}px`;
-    colorPickerHandle.style.top = `${centerY}px`;
+    requestAnimationFrame(() => {
+        const wheelRect = colorWheel.getBoundingClientRect();
+        const centerX = wheelRect.width / 2;
+        const centerY = wheelRect.height / 2;
+        
+        colorPickerHandle.style.left = `${centerX}px`;
+        colorPickerHandle.style.top = `${centerY}px`;
+    });
 }
 
 initColorPicker();
 
-// 添加色轮双击事件处理
-colorWheel.addEventListener('dblclick', () => {
+// 修改色轮双击事件处理
+colorWheel.addEventListener('dblclick', (e) => {
+    e.preventDefault(); // 防止双击选中文本
+    
     // 重置选择器位置到中心
     const wheelRect = colorWheel.getBoundingClientRect();
     const centerX = wheelRect.width / 2;
     const centerY = wheelRect.height / 2;
     
-    colorPickerHandle.style.left = `${centerX}px`;
-    colorPickerHandle.style.top = `${centerY}px`;
-    
-    // 设置为白色
-    currentRGB = { r: 255, g: 255, b: 255 };
-    updateColor();
-    
-    // 移除所有预设颜色的激活状态
-    document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
+    requestAnimationFrame(() => {
+        colorPickerHandle.style.left = `${centerX}px`;
+        colorPickerHandle.style.top = `${centerY}px`;
+        
+        // 设置为白色
+        currentRGB = { r: 255, g: 255, b: 255 };
+        currentBrightness = 100;
+        brightnessSlider.value = 100;
+        updateColor();
+        
+        // 移除所有预设颜色的激活状态
+        document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
+    });
 }); 
