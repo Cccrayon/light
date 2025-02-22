@@ -148,16 +148,11 @@ document.querySelectorAll('.color-preset').forEach(preset => {
     });
 });
 
-// 修改色轮的事件监听
+// 保留一个统一的事件处理逻辑
 let lastClickTime = 0;
 const DOUBLE_CLICK_DELAY = 100;
 
-// 移除重复的事件监听器
-colorWheel.removeEventListener('mousedown', null);
-document.removeEventListener('mousemove', null);
-document.removeEventListener('mouseup', null);
-
-// 重新添加事件监听器
+// 修改色轮的事件监听
 colorWheel.addEventListener('mousedown', (e) => {
     const currentTime = new Date().getTime();
     const timeDiff = currentTime - lastClickTime;
@@ -503,9 +498,6 @@ function initColorPicker() {
 initColorPicker();
 
 // 修改色轮双击事件处理
-let lastClickTime = 0;
-const DOUBLE_CLICK_DELAY = 100;
-
 colorWheel.addEventListener('mousedown', (e) => {
     const currentTime = new Date().getTime();
     const timeDiff = currentTime - lastClickTime;
@@ -545,9 +537,6 @@ colorWheel.addEventListener('mousedown', (e) => {
     
     lastClickTime = currentTime;
 });
-
-// 移除原来的双击事件监听器
-colorWheel.removeEventListener('dblclick', null);
 
 // 修改更新色轮选择器位置的函数，移除重复的亮度更新
 function updatePickerPosition(r, g, b) {
