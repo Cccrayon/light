@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>屏幕颜色调节器</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="colorDisplay"></div>
+    
+    <div class="control-panel expanded" id="controlPanel">
+        <div class="panel-header">
+            <span>颜色调节器</span>
+            <button class="toggle-button" id="togglePanel">收起</button>
+        </div>
+        <div class="controls-container">
+            <div class="preset-colors">
+                <div class="color-preset" data-color="147,112,219" title="紫色" style="background-color: rgb(147,112,219)"></div>
+                <div class="color-preset" data-color="135,206,235" title="浅蓝" style="background-color: rgb(135,206,235)"></div>
+                <div class="color-preset" data-color="25,25,112" title="深蓝" style="background-color: rgb(25,25,112)"></div>
+                <div class="color-preset" data-color="255,182,193" title="浅粉" style="background-color: rgb(255,182,193)"></div>
+                <div class="color-preset" data-color="255,255,255" title="白色" style="background-color: rgb(255,255,255)"></div>
+                <div class="color-preset" data-color="255,223,0" title="明黄" style="background-color: rgb(255,223,0)"></div>
+                <div class="color-preset" data-color="255,127,80" title="落日橙" style="background-color: rgb(255,127,80)"></div>
+                <div class="color-preset" data-color="128,0,128" title="深紫" style="background-color: rgb(128,0,128)"></div>
+            </div>
+
+            <div class="color-wheel-container">
+                <div class="selected-color-preview" id="colorPreview"></div>
+                <div class="color-wheel" id="colorWheel"></div>
+                <div class="color-picker-handle" id="colorPickerHandle"></div>
+            </div>
+
+            <div class="brightness-control">
+                <input type="range" class="brightness-slider" id="brightnessSlider" min="0" max="200" value="100">
+                <div class="brightness-value" id="brightnessValue">100%</div>
+            </div>
+        </div>
+    </div>
+
+    <button class="camera-button" id="openCamera" title="打开相机">
+        <svg viewBox="0 0 24 24">
+            <path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4z"/>
+            <path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/>
+        </svg>
+    </button>
+
+    <div class="camera-container" id="cameraContainer">
+        <div class="camera-header">
+            <span>相机预览</span>
+            <button class="close-camera" id="closeCamera">×</button>
+        </div>
+        <div class="camera-content">
+            <div class="camera-preview">
+                <video id="videoPreview" autoplay playsinline></video>
+                <img id="capturedPhoto" class="captured-photo" alt="拍摄的照片">
+            </div>
+            <div class="camera-controls">
+                <button class="shutter-button" id="takePhoto"></button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 
