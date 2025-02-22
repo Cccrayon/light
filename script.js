@@ -156,8 +156,15 @@ function handleColorWheelInteraction(e) {
     }
 }
 
+// 删除所有现有的色轮事件监听器
+colorWheel.removeEventListener('mousedown', null);
+colorWheel.removeEventListener('dblclick', null);
+document.removeEventListener('mousemove', null);
+document.removeEventListener('mouseup', null);
+
 // 色轮鼠标事件
 colorWheel.addEventListener('mousedown', function(e) {
+    e.preventDefault();
     isPickingColor = true;
     handleColorWheelInteraction(e);
 });
@@ -171,6 +178,27 @@ document.addEventListener('mousemove', function(e) {
 
 document.addEventListener('mouseup', function() {
     isPickingColor = false;
+});
+
+// 双击事件处理
+colorWheel.addEventListener('dblclick', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    isPickingColor = false;
+    
+    const wheelRect = colorWheel.getBoundingClientRect();
+    const centerX = wheelRect.width / 2;
+    const centerY = wheelRect.height / 2;
+    
+    colorPickerHandle.style.left = `${centerX}px`;
+    colorPickerHandle.style.top = `${centerY}px`;
+    
+    currentRGB = { r: 255, g: 255, b: 255 };
+    currentBrightness = 100;
+    brightnessSlider.value = 100;
+    updateColor();
+    
+    document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
 });
 
 // 色轮触摸事件
@@ -227,67 +255,6 @@ function initColorPicker() {
 createColorWheel(canvas);
 updateColor();
 initColorPicker();
-
-// 双击事件处理
-colorWheel.addEventListener('dblclick', function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    const wheelRect = colorWheel.getBoundingClientRect();
-    const centerX = wheelRect.width / 2;
-    const centerY = wheelRect.height / 2;
-    
-    colorPickerHandle.style.left = `${centerX}px`;
-    colorPickerHandle.style.top = `${centerY}px`;
-    
-    currentRGB = { r: 255, g: 255, b: 255 };
-    currentBrightness = 100;
-    brightnessSlider.value = 100;
-    updateColor();
-    
-    document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
-});
-
-// 修改色轮双击事件处理
-colorWheel.addEventListener('mousedown', (e) => {
-    const currentTime = new Date().getTime();
-    const timeDiff = currentTime - lastClickTime;
-    
-    if (timeDiff < DOUBLE_CLICK_DELAY) {
-        // 双击处理
-        e.preventDefault();
-        e.stopPropagation(); // 阻止事件冒泡
-        
-        // 重置选择器位置到中心
-        const wheelRect = colorWheel.getBoundingClientRect();
-        const centerX = wheelRect.width / 2;
-        const centerY = wheelRect.height / 2;
-        
-        requestAnimationFrame(() => {
-            colorPickerHandle.style.left = `${centerX}px`;
-            colorPickerHandle.style.top = `${centerY}px`;
-            
-            // 设置为白色
-            currentRGB = { r: 255, g: 255, b: 255 };
-            currentBrightness = 100;
-            brightnessSlider.value = 100;
-            updateColor();
-            
-            // 移除所有预设颜色的激活状态
-            document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
-        });
-        
-        // 防止触发正常的颜色选择
-        isPickingColor = false;
-        return;
-    }
-    
-    // 正常的颜色选择处理
-    isPickingColor = true;
-    handleColorWheelInteraction(e);
-    
-    lastClickTime = currentTime;
-});
 
 // 修改更新色轮选择器位置的函数，移除重复的亮度更新
 function updatePickerPosition(r, g, b) {
