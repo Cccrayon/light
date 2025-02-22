@@ -339,7 +339,7 @@ function stopCamera() {
 function takePhoto() {
     const canvas = document.createElement('canvas');
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    const isMac = /Macintosh/i.test(navigator.userAgent);
+    const isChrome = /Chrome/i.test(navigator.userAgent);
     
     canvas.width = videoPreview.videoWidth;
     canvas.height = videoPreview.videoHeight;
@@ -349,18 +349,23 @@ function takePhoto() {
     // 先重置任何可能的变换
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     
-    // 在 Mac 上需要镜像处理
-    if (isMac && !isMobile) {
-        ctx.translate(canvas.width, 0);
-        ctx.scale(-1, 1);
+    // Chrome 桌面版需要特殊处理
+    if (isChrome && !isMobile) {
+        // 不进行镜像处理，保持原样
+        ctx.drawImage(videoPreview, 0, 0);
     }
     // 移动设备前置摄像头需要镜像处理
     else if (isMobile) {
         ctx.translate(canvas.width, 0);
         ctx.scale(-1, 1);
+        ctx.drawImage(videoPreview, 0, 0);
     }
-    
-    ctx.drawImage(videoPreview, 0, 0);
+    // 其他浏览器
+    else {
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+        ctx.drawImage(videoPreview, 0, 0);
+    }
     
     // 重置变换以确保后续操作不受影响
     ctx.setTransform(1, 0, 0, 1, 0, 0);
