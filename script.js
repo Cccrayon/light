@@ -57,7 +57,7 @@ function hsvToRgb(h, s, v) {
     ];
 }
 
-// 创建色轮
+// 修改色轮创建函数，使用更平滑的渲染方式
 function createColorWheel(canvas) {
     const ctx = canvas.getContext('2d');
     const centerX = canvas.width / 2;
@@ -66,25 +66,31 @@ function createColorWheel(canvas) {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    for (let x = -radius; x < radius; x++) {
-        for (let y = -radius; y < radius; y++) {
-            const dx = x / radius;
-            const dy = y / radius;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            if (distance <= 1) {
-                let hue = ((Math.atan2(dy, dx) / Math.PI * 180) + 360) % 360 / 360;
-                let saturation = distance;
-                let value = 1;
+    // 使用更高的分辨率来渲染
+    const scale = 2;
+    canvas.style.width = canvas.width + 'px';
+    canvas.style.height = canvas.height + 'px';
+    canvas.width = canvas.width * scale;
+    canvas.height = canvas.height * scale;
+    ctx.scale(scale, scale);
 
-                const [r, g, b] = hsvToRgb(hue, saturation, value);
-                ctx.fillStyle = `rgb(${r},${g},${b})`;
-                ctx.fillRect(centerX + x, centerY + y, 1, 1);
-            }
+    // 使用渐变来创建更平滑的色轮
+    for (let angle = 0; angle < 360; angle += 1) {
+        const startAngle = (angle - 0.5) * Math.PI / 180;
+        const endAngle = (angle + 0.5) * Math.PI / 180;
+
+        for (let dist = 0; dist < radius; dist++) {
+            const saturation = dist / radius;
+            const [r, g, b] = hsvToRgb(angle / 360, saturation, 1);
+            
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, dist, startAngle, endAngle);
+            ctx.strokeStyle = `rgb(${r},${g},${b})`;
+            ctx.stroke();
         }
     }
 
-    // 添加中心白点渐变
+    // 添加平滑的中心白点
     const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius * 0.15);
     gradient.addColorStop(0, 'rgba(255,255,255,1)');
     gradient.addColorStop(1, 'rgba(255,255,255,0)');
@@ -112,8 +118,25 @@ function updateColor() {
     brightnessValue.textContent = `${Math.round(currentBrightness)}%`;
 }
 
-// 修改色轮颜色选择函数，支持触摸事件
-function updateColorFromWheel(e) {
+// 修改预设颜色点击处理
+document.querySelectorAll('.color-preset').forEach(preset => {
+    preset.addEventListener('click', () => {
+        document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
+        preset.classList.add('active');
+        
+        const [r, g, b] = preset.dataset.color.split(',');
+        currentRGB = { r: parseInt(r), g: parseInt(g), b: parseInt(b) };
+        
+        // 重置亮度到100%
+        currentBrightness = 100;
+        brightnessSlider.value = 100;
+        
+        updateColor();
+    });
+});
+
+// 优化色轮的触摸交互
+function handleColorWheelInteraction(e) {
     const rect = canvas.getBoundingClientRect();
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
@@ -143,21 +166,37 @@ function updateColorFromWheel(e) {
     }
 }
 
-// 添加色轮的触摸事件支持
+// 修改色轮的触摸事件处理
 colorWheel.addEventListener('touchstart', (e) => {
     e.preventDefault();
     isPickingColor = true;
-    updateColorFromWheel(e.touches[0]);
+    handleColorWheelInteraction(e.touches[0]);
 }, { passive: false });
 
-document.addEventListener('touchmove', (e) => {
+colorWheel.addEventListener('touchmove', (e) => {
     if (isPickingColor) {
         e.preventDefault();
-        updateColorFromWheel(e.touches[0]);
+        handleColorWheelInteraction(e.touches[0]);
     }
 }, { passive: false });
 
 document.addEventListener('touchend', () => {
+    isPickingColor = false;
+});
+
+// 修改色轮的鼠标事件处理
+colorWheel.addEventListener('mousedown', (e) => {
+    isPickingColor = true;
+    handleColorWheelInteraction(e);
+});
+
+document.addEventListener('mousemove', (e) => {
+    if (isPickingColor) {
+        handleColorWheelInteraction(e);
+    }
+});
+
+document.addEventListener('mouseup', () => {
     isPickingColor = false;
 });
 
@@ -181,22 +220,6 @@ brightnessSlider.addEventListener('touchmove', (e) => {
     brightnessSlider.value = currentBrightness;
     updateColor();
 }, { passive: false });
-
-// 修改色轮事件监听，支持触摸
-colorWheel.addEventListener('mousedown', (e) => {
-    isPickingColor = true;
-    updateColorFromWheel(e);
-});
-
-document.addEventListener('mousemove', (e) => {
-    if (isPickingColor) {
-        updateColorFromWheel(e);
-    }
-});
-
-document.addEventListener('mouseup', () => {
-    isPickingColor = false;
-});
 
 // 控制面板拖动
 controlPanel.addEventListener('mousedown', (e) => {
@@ -235,18 +258,6 @@ brightnessSlider.addEventListener('dblclick', () => {
     currentBrightness = 100;
     brightnessSlider.value = 100;
     updateColor();
-});
-
-// 预设颜色点击
-document.querySelectorAll('.color-preset').forEach(preset => {
-    preset.addEventListener('click', () => {
-        document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('active'));
-        preset.classList.add('active');
-        
-        const [r, g, b] = preset.dataset.color.split(',');
-        currentRGB = { r: parseInt(r), g: parseInt(g), b: parseInt(b) };
-        updateColor();
-    });
 });
 
 // 面板展开/收起
