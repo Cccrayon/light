@@ -112,21 +112,25 @@ function updateColor() {
     brightnessValue.textContent = `${Math.round(currentBrightness)}%`;
 }
 
-// 色轮颜色选择
+// 修改色轮颜色选择函数，支持触摸事件
 function updateColorFromWheel(e) {
     const rect = canvas.getBoundingClientRect();
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
     
-    const x = e.clientX - rect.left - centerX;
-    const y = e.clientY - rect.top - centerY;
+    // 获取坐标，支持鼠标和触摸事件
+    const clientX = e.clientX || e.touches[0].clientX;
+    const clientY = e.clientY || e.touches[0].clientY;
+    
+    const x = clientX - rect.left - centerX;
+    const y = clientY - rect.top - centerY;
     
     const distance = Math.sqrt(x*x + y*y);
     const maxDistance = rect.width / 2;
     
     if (distance <= maxDistance) {
-        colorPickerHandle.style.left = `${e.clientX - rect.left}px`;
-        colorPickerHandle.style.top = `${e.clientY - rect.top}px`;
+        colorPickerHandle.style.left = `${clientX - rect.left}px`;
+        colorPickerHandle.style.top = `${clientY - rect.top}px`;
         
         let angle = Math.atan2(-y, -x) * 180 / Math.PI;
         if (angle < 0) angle += 360;
@@ -138,6 +142,61 @@ function updateColorFromWheel(e) {
         updateColor();
     }
 }
+
+// 添加色轮的触摸事件支持
+colorWheel.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    isPickingColor = true;
+    updateColorFromWheel(e.touches[0]);
+}, { passive: false });
+
+document.addEventListener('touchmove', (e) => {
+    if (isPickingColor) {
+        e.preventDefault();
+        updateColorFromWheel(e.touches[0]);
+    }
+}, { passive: false });
+
+document.addEventListener('touchend', () => {
+    isPickingColor = false;
+});
+
+// 添加亮度滑块的触摸支持
+brightnessSlider.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    const rect = brightnessSlider.getBoundingClientRect();
+    const x = e.touches[0].clientX - rect.left;
+    const percentage = (x / rect.width) * 200;
+    currentBrightness = Math.max(0, Math.min(200, percentage));
+    brightnessSlider.value = currentBrightness;
+    updateColor();
+}, { passive: false });
+
+brightnessSlider.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    const rect = brightnessSlider.getBoundingClientRect();
+    const x = e.touches[0].clientX - rect.left;
+    const percentage = (x / rect.width) * 200;
+    currentBrightness = Math.max(0, Math.min(200, percentage));
+    brightnessSlider.value = currentBrightness;
+    updateColor();
+}, { passive: false });
+
+// 修改色轮事件监听，支持触摸
+colorWheel.addEventListener('mousedown', (e) => {
+    isPickingColor = true;
+    updateColorFromWheel(e);
+});
+
+document.addEventListener('mousemove', (e) => {
+    if (isPickingColor) {
+        updateColorFromWheel(e);
+    }
+});
+
+document.addEventListener('mouseup', () => {
+    isPickingColor = false;
+});
 
 // 控制面板拖动
 controlPanel.addEventListener('mousedown', (e) => {
@@ -164,22 +223,6 @@ document.addEventListener('mousemove', (e) => {
 
 document.addEventListener('mouseup', () => {
     isDragging = false;
-});
-
-// 色轮事件监听
-colorWheel.addEventListener('mousedown', (e) => {
-    isPickingColor = true;
-    updateColorFromWheel(e);
-});
-
-document.addEventListener('mousemove', (e) => {
-    if (isPickingColor) {
-        updateColorFromWheel(e);
-    }
-});
-
-document.addEventListener('mouseup', () => {
-    isPickingColor = false;
 });
 
 // 亮度调节
