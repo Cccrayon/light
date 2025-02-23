@@ -292,7 +292,6 @@ function updateColor() {
 async function initCamera() {
     try {
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-        const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
         
         const constraints = {
             video: {
@@ -305,8 +304,8 @@ async function initCamera() {
         stream = await navigator.mediaDevices.getUserMedia(constraints);
         videoPreview.srcObject = stream;
         
-        // 移除预览的镜像效果
-        videoPreview.style.transform = 'scaleX(1)';
+        // 所有设备的预览都需要镜像
+        videoPreview.style.transform = 'scaleX(-1)';
         
         cameraContainer.style.display = 'block';
         
@@ -338,7 +337,6 @@ function stopCamera() {
 function takePhoto() {
     const canvas = document.createElement('canvas');
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
     
     canvas.width = videoPreview.videoWidth;
     canvas.height = videoPreview.videoHeight;
@@ -346,8 +344,8 @@ function takePhoto() {
     const ctx = canvas.getContext('2d');
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     
-    // 在移动设备上需要镜像处理
-    if (isMobile) {
+    // PC端需要镜像处理，移动端不需要
+    if (!isMobile) {
         ctx.translate(canvas.width, 0);
         ctx.scale(-1, 1);
     }
@@ -371,9 +369,9 @@ function takePhoto() {
         }, 'image/jpeg', 0.95);
     }
     
-    // 预览拍摄的照片
+    // 预览拍摄的照片，保持与预览相同的方向
     capturedPhoto.src = photoData;
-    capturedPhoto.style.transform = 'scaleX(1)';
+    capturedPhoto.style.transform = 'scaleX(-1)';
     videoPreview.style.display = 'none';
     capturedPhoto.style.display = 'block';
     
