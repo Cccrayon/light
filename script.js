@@ -476,31 +476,15 @@ document.addEventListener('touchend', function() {
 
 // 修改面板切换按钮的处理
 toggleButton.addEventListener('click', function() {
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    const panel = document.getElementById('controlPanel');
+    const panel = document.querySelector('.control-panel');
     
     if (panel.classList.contains('collapsed')) {
         // 展开面板
         panel.classList.remove('collapsed');
         this.textContent = '收起';
-        
-        if (!isMobile) {
-            // PC端：确保面板不会超出屏幕
-            const rect = panel.getBoundingClientRect();
-            if (rect.right > window.innerWidth) {
-                panel.style.right = '0';
-                panel.style.left = 'auto';
-            }
-        }
     } else {
         // 收起面板
         panel.classList.add('collapsed');
         this.textContent = '展开';
-        
-        if (!isMobile) {
-            // PC端：重置面板位置
-            panel.style.right = 'auto';
-            panel.style.left = '0';
-        }
     }
 }); 
