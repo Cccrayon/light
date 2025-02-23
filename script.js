@@ -495,13 +495,23 @@ toggleButton.addEventListener('click', function() {
             toggleButton.textContent = '<';
         }
     } else {
-        // 在桌面设备上保持原来的行为
-        if (controlPanel.style.right === '-280px') {
-            controlPanel.style.right = '0';
-            toggleButton.textContent = '>';
-        } else {
+        // 在桌面设备上使用 right 属性切换
+        const currentRight = controlPanel.style.right;
+        if (!currentRight || currentRight === '0px' || currentRight === '0') {
             controlPanel.style.right = '-280px';
             toggleButton.textContent = '<';
+        } else {
+            controlPanel.style.right = '0';
+            toggleButton.textContent = '>';
         }
     }
-}); 
+});
+
+// 初始化控制面板状态
+const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+if (isMobile) {
+    controlPanel.style.transform = 'translateX(0)';
+} else {
+    controlPanel.style.right = '0';
+}
+toggleButton.textContent = '>'; 
