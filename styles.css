@@ -83,6 +83,7 @@ body {
 }
 
 .color-wheel-container {
+    position: relative;
     width: 140px;
     height: 140px;
     margin: 10px auto;
@@ -108,6 +109,7 @@ body {
     transform: translate(-50%, -50%);
     pointer-events: none;
     box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+    z-index: 1;
 }
 
 .brightness-control {
@@ -313,7 +315,7 @@ body {
     }
 
     .color-picker-handle {
-        width: 20px;
-        height: 20px;
+        width: 10px;
+        height: 10px;
     }
 } 
