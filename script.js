@@ -5,7 +5,7 @@ const brightnessSlider = document.getElementById('brightnessSlider');
 const brightnessValue = document.getElementById('brightnessValue');
 const colorDisplay = document.getElementById('colorDisplay');
 const colorPreview = document.getElementById('colorPreview');
-const controlPanel = document.getElementById('controlPanel');
+const controlPanel = document.querySelector('.control-panel');
 const toggleButton = document.getElementById('togglePanel');
 
 // 相机相关变量
@@ -480,4 +480,68 @@ document.addEventListener('touchmove', function(e) {
 
 document.addEventListener('touchend', function() {
     isHandleDragging = false;
-}); 
+});
+
+// 添加面板拖动功能
+const panelHeader = document.querySelector('.panel-header');
+
+let xOffset = 0;
+let yOffset = 0;
+
+function dragStart(e) {
+    if (e.type === "touchstart") {
+        initialX = e.touches[0].clientX - xOffset;
+        initialY = e.touches[0].clientY - yOffset;
+    } else {
+        initialX = e.clientX - xOffset;
+        initialY = e.clientY - yOffset;
+    }
+
+    if (e.target === panelHeader) {
+        isDragging = true;
+    }
+}
+
+function dragEnd() {
+    isDragging = false;
+}
+
+function drag(e) {
+    if (isDragging) {
+        e.preventDefault();
+        
+        if (e.type === "touchmove") {
+            currentX = e.touches[0].clientX - initialX;
+            currentY = e.touches[0].clientY - initialY;
+        } else {
+            currentX = e.clientX - initialX;
+            currentY = e.clientY - initialY;
+        }
+
+        xOffset = currentX;
+        yOffset = currentY;
+
+        // 确保面板不会超出视窗
+        const rect = controlPanel.getBoundingClientRect();
+        const maxX = window.innerWidth - rect.width;
+        const maxY = window.innerHeight - rect.height;
+        
+        xOffset = Math.min(Math.max(0, xOffset), maxX);
+        yOffset = Math.min(Math.max(0, yOffset), maxY);
+
+        setTranslate(xOffset, yOffset, controlPanel);
+    }
+}
+
+function setTranslate(xPos, yPos, el) {
+    el.style.transform = `translate(${xPos}px, ${yPos}px)`;
+}
+
+// 添加事件监听器
+panelHeader.addEventListener("touchstart", dragStart, { passive: false });
+document.addEventListener("touchend", dragEnd);
+document.addEventListener("touchmove", drag, { passive: false });
+
+panelHeader.addEventListener("mousedown", dragStart);
+document.addEventListener("mouseup", dragEnd);
+document.addEventListener("mousemove", drag); 
