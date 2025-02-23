@@ -264,8 +264,8 @@ body {
     display: none;
 }
 
-.control-panel.collapsed .controls-container {
-    display: none;
+.controls-container {
+    display: block;
 }
 
 @media (max-width: 768px) {
