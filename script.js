@@ -96,11 +96,13 @@ function rgbToHsv(r, g, b) {
 // 修改色轮创建函数
 function createColorWheel(canvas) {
     const ctx = canvas.getContext('2d');
-    const radius = canvas.width / 2;
-    const centerX = radius;
-    const centerY = radius;
+    const width = canvas.width;
+    const height = canvas.height;
+    const radius = Math.min(width, height) / 2;
+    const centerX = width / 2;
+    const centerY = height / 2;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, width, height);
 
     // 使用渐变来创建更平滑的色轮
     for (let angle = 0; angle < 360; angle += 0.5) {
@@ -232,6 +234,11 @@ function initColorPicker() {
     
     colorPickerHandle.style.left = `${centerX}px`;
     colorPickerHandle.style.top = `${centerY}px`;
+    
+    // 设置画布大小与容器相同
+    canvas.width = wheelRect.width;
+    canvas.height = wheelRect.height;
+    createColorWheel(canvas);
 }
 
 // 初始化
