@@ -336,12 +336,11 @@ function takePhoto() {
     // 先重置任何可能的变换
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     
-    // 在非移动设备上，总是进行镜像处理
-    if (!isMobile) {
+    // 在移动设备上，前置摄像头需要镜像处理
+    if (isMobile) {
         ctx.translate(canvas.width, 0);
         ctx.scale(-1, 1);
     }
-    // 在移动设备上保持原样
     
     ctx.drawImage(videoPreview, 0, 0);
     
@@ -480,4 +479,29 @@ document.addEventListener('touchmove', function(e) {
 
 document.addEventListener('touchend', function() {
     isHandleDragging = false;
+});
+
+// 修改控制面板切换按钮的事件处理
+toggleButton.addEventListener('click', function() {
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+        // 在移动设备上使用 transform 来切换
+        if (controlPanel.style.transform === 'translateX(100%)') {
+            controlPanel.style.transform = 'translateX(0)';
+            toggleButton.textContent = '>';
+        } else {
+            controlPanel.style.transform = 'translateX(100%)';
+            toggleButton.textContent = '<';
+        }
+    } else {
+        // 在桌面设备上保持原来的行为
+        if (controlPanel.style.right === '-280px') {
+            controlPanel.style.right = '0';
+            toggleButton.textContent = '>';
+        } else {
+            controlPanel.style.right = '-280px';
+            toggleButton.textContent = '<';
+        }
+    }
 }); 
