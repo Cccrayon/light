@@ -339,32 +339,25 @@ function takePhoto() {
     canvas.height = videoPreview.videoHeight;
     
     const ctx = canvas.getContext('2d');
-    
-    // 先重置任何可能的变换
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     
-    // 在非移动设备上，总是进行镜像处理
-    if (!isMobile) {
+    // 修改镜像处理逻辑
+    // 在移动端前置摄像头时，需要保持镜像效果
+    if (isMobile) {
         ctx.translate(canvas.width, 0);
         ctx.scale(-1, 1);
     }
-    // 在移动设备上保持原样
     
     ctx.drawImage(videoPreview, 0, 0);
-    
-    // 重置变换以确保后续操作不受影响
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     
-    // 生成正确方向的照片数据
     const photoData = canvas.toDataURL('image/jpeg', 0.95);
     
     if (isMobile) {
-        // 移动设备使用新窗口显示
         const newWindow = window.open();
-        newWindow.document.write(`<img src="${photoData}" alt="photo">`);
+        newWindow.document.write(`<img src="${photoData}" alt="photo" style="transform: scaleX(-1);">`);
         newWindow.document.write('<div style="text-align:center;margin-top:20px;">长按图片保存到相册</div>');
     } else {
-        // 其他设备直接下载
         canvas.toBlob((blob) => {
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
@@ -377,7 +370,7 @@ function takePhoto() {
     
     // 预览拍摄的照片
     capturedPhoto.src = photoData;
-    capturedPhoto.style.transform = 'scaleX(1)';
+    capturedPhoto.style.transform = isMobile ? 'scaleX(-1)' : 'scaleX(1)';
     videoPreview.style.display = 'none';
     capturedPhoto.style.display = 'block';
     
