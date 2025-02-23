@@ -24,10 +24,10 @@ body {
     box-shadow: 0 2px 10px rgba(0,0,0,0.2);
     backdrop-filter: blur(8px);
     width: 160px;
-    cursor: move;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     user-select: none;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     will-change: transform;
+    z-index: 1000;
 }
 
 .panel-header {
@@ -38,6 +38,7 @@ body {
     padding-bottom: 8px;
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
     font-size: 0.9em;
+    cursor: move;
 }
 
 .toggle-button {
@@ -58,9 +59,8 @@ body {
 .preset-colors {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-    margin-bottom: 12px;
-    padding: 4px;
+    gap: 6px;
+    margin: 10px 0;
 }
 
 .color-preset {
@@ -83,10 +83,9 @@ body {
 }
 
 .color-wheel-container {
-    position: relative;
-    width: 160px;
-    height: 160px;
-    margin: 15px auto;
+    width: 140px;
+    height: 140px;
+    margin: 10px auto;
 }
 
 .color-wheel {
@@ -112,8 +111,7 @@ body {
 }
 
 .brightness-control {
-    margin-top: 15px;
-    padding: 0 5px;
+    margin-top: 10px;
 }
 
 .brightness-slider {
@@ -305,12 +303,13 @@ body {
     }
 
     .color-wheel-container {
-        width: 140px;
-        height: 140px;
+        width: 120px;
+        height: 120px;
     }
 
     .control-panel {
-        width: 180px;
+        width: 140px;
+        padding: 10px;
     }
 
     .color-picker-handle {
