@@ -305,10 +305,8 @@ async function initCamera() {
         stream = await navigator.mediaDevices.getUserMedia(constraints);
         videoPreview.srcObject = stream;
         
-        // 在 iOS 上不应用镜像效果
-        if (isIOS) {
-            videoPreview.style.transform = 'scaleX(1)';
-        }
+        // 在 iOS Safari 上，视频预览需要镜像
+        videoPreview.style.transform = 'scaleX(-1)';
         
         cameraContainer.style.display = 'block';
         
@@ -348,13 +346,8 @@ function takePhoto() {
     const ctx = canvas.getContext('2d');
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     
-    // iOS 设备需要特殊处理
-    if (isIOS) {
-        // 在 iOS 上需要镜像处理才能得到正确方向的照片
-        ctx.translate(canvas.width, 0);
-        ctx.scale(-1, 1);
-    } else if (isMobile) {
-        // 其他移动设备保持原样
+    // 在 iOS Safari 上，不需要镜像处理，因为视频已经是镜像的
+    if (!isIOS && isMobile) {
         ctx.translate(canvas.width, 0);
         ctx.scale(-1, 1);
     }
@@ -366,9 +359,8 @@ function takePhoto() {
     
     if (isMobile) {
         const newWindow = window.open();
-        // iOS 设备不需要额外的镜像转换
-        const transform = isIOS ? '' : 'style="transform: scaleX(-1);"';
-        newWindow.document.write(`<img src="${photoData}" alt="photo" ${transform}>`);
+        // 在 iOS Safari 上，图片不需要镜像
+        newWindow.document.write(`<img src="${photoData}" alt="photo">`);
         newWindow.document.write('<div style="text-align:center;margin-top:20px;">长按图片保存到相册</div>');
     } else {
         canvas.toBlob((blob) => {
@@ -383,8 +375,8 @@ function takePhoto() {
     
     // 预览拍摄的照片
     capturedPhoto.src = photoData;
-    // iOS 设备不需要镜像预览
-    capturedPhoto.style.transform = isIOS ? 'scaleX(1)' : 'scaleX(-1)';
+    // 在 iOS Safari 上，预览图片不需要镜像
+    capturedPhoto.style.transform = 'scaleX(1)';
     videoPreview.style.display = 'none';
     capturedPhoto.style.display = 'block';
     
