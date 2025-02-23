@@ -292,6 +292,7 @@ function updateColor() {
 async function initCamera() {
     try {
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
         
         const constraints = {
             video: {
@@ -303,6 +304,11 @@ async function initCamera() {
 
         stream = await navigator.mediaDevices.getUserMedia(constraints);
         videoPreview.srcObject = stream;
+        
+        // 在 iOS 上不应用镜像效果
+        if (isIOS) {
+            videoPreview.style.transform = 'scaleX(1)';
+        }
         
         cameraContainer.style.display = 'block';
         
@@ -334,6 +340,7 @@ function stopCamera() {
 function takePhoto() {
     const canvas = document.createElement('canvas');
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
     
     canvas.width = videoPreview.videoWidth;
     canvas.height = videoPreview.videoHeight;
@@ -342,8 +349,8 @@ function takePhoto() {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     
     // 修改镜像处理逻辑
-    // 在移动端前置摄像头时，需要保持镜像效果
-    if (isMobile) {
+    if (isMobile && !isIOS) {
+        // 在非iOS移动设备上保持镜像效果
         ctx.translate(canvas.width, 0);
         ctx.scale(-1, 1);
     }
@@ -355,7 +362,9 @@ function takePhoto() {
     
     if (isMobile) {
         const newWindow = window.open();
-        newWindow.document.write(`<img src="${photoData}" alt="photo" style="transform: scaleX(-1);">`);
+        // 在非iOS设备上应用镜像效果
+        const transform = !isIOS ? 'style="transform: scaleX(-1);"' : '';
+        newWindow.document.write(`<img src="${photoData}" alt="photo" ${transform}>`);
         newWindow.document.write('<div style="text-align:center;margin-top:20px;">长按图片保存到相册</div>');
     } else {
         canvas.toBlob((blob) => {
@@ -370,7 +379,7 @@ function takePhoto() {
     
     // 预览拍摄的照片
     capturedPhoto.src = photoData;
-    capturedPhoto.style.transform = isMobile ? 'scaleX(-1)' : 'scaleX(1)';
+    capturedPhoto.style.transform = (isMobile && !isIOS) ? 'scaleX(-1)' : 'scaleX(1)';
     videoPreview.style.display = 'none';
     capturedPhoto.style.display = 'block';
     
