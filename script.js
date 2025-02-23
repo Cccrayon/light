@@ -305,10 +305,8 @@ async function initCamera() {
         stream = await navigator.mediaDevices.getUserMedia(constraints);
         videoPreview.srcObject = stream;
         
-        // 所有移动设备上的前置摄像头都需要镜像预览
-        if (isMobile) {
-            videoPreview.style.transform = 'scaleX(-1)';
-        }
+        // 移除预览的镜像效果
+        videoPreview.style.transform = 'scaleX(1)';
         
         cameraContainer.style.display = 'block';
         
@@ -348,7 +346,12 @@ function takePhoto() {
     const ctx = canvas.getContext('2d');
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     
-    // 直接绘制，不做镜像处理
+    // 在移动设备上需要镜像处理
+    if (isMobile) {
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+    }
+    
     ctx.drawImage(videoPreview, 0, 0);
     
     const photoData = canvas.toDataURL('image/jpeg', 0.95);
@@ -368,7 +371,7 @@ function takePhoto() {
         }, 'image/jpeg', 0.95);
     }
     
-    // 预览拍摄的照片，不需要镜像
+    // 预览拍摄的照片
     capturedPhoto.src = photoData;
     capturedPhoto.style.transform = 'scaleX(1)';
     videoPreview.style.display = 'none';
