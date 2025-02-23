@@ -551,4 +551,20 @@ document.addEventListener("touchmove", drag, { passive: false });
 
 panelHeader.addEventListener("mousedown", dragStart);
 document.addEventListener("mouseup", dragEnd);
-document.addEventListener("mousemove", drag); 
+document.addEventListener("mousemove", drag);
+
+// 修改面板切换按钮的处理
+toggleButton.addEventListener('click', function() {
+    const panel = document.querySelector('.control-panel');
+    const controlsContainer = panel.querySelector('.controls-container');
+    
+    if (controlsContainer.style.display === 'none') {
+        // 展开面板
+        controlsContainer.style.display = 'block';
+        this.textContent = '收起';
+    } else {
+        // 收起面板
+        controlsContainer.style.display = 'none';
+        this.textContent = '展开';
+    }
+}); 
